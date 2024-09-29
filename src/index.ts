@@ -33,6 +33,10 @@ app.onError((err, c) => {
 	return c.json({ message: 'Internal error' }, { status: 500 });
 });
 
+app.get('/', (c) => {
+	return c.redirect("https://github.com/FerroEduardo/bskye")
+});
+
 app.get('/profile/:userHandler/post/:postId', async (c) => {
 	const { postId, userHandler } = c.req.param();
 	const postAtUri = convertPostUrlToAtPostUri(userHandler, postId);
