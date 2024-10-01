@@ -12,7 +12,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, post: Th
 	const metaTags = [
 		`<meta charset="utf-8" />`,
 		`<meta name="theme-color" content="#0a7aff" />`,
-		`<meta name="twitter:title" content="@${userHandler}" />`,
+		`<meta name="twitter:title" content="${author.displayName} (@${author.handle})" />`,
 		`<meta property="og:site_name" content="bskye" />`,
 		`<meta property="og:url" content="${postUrl}" />`,
 		`<meta http-equiv="refresh" content="0; url = ${postUrl}" />`,
