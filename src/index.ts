@@ -32,7 +32,7 @@ app.onError((err, c) => {
 });
 
 app.get('/', (c) => {
-	return c.redirect("https://github.com/FerroEduardo/bskye")
+	return c.redirect('https://github.com/FerroEduardo/bskye');
 });
 
 app.get('/profile/:userHandler/post/:postId', getPost);

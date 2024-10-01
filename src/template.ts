@@ -1,9 +1,13 @@
 import { ThreadViewPost } from './types';
+import { generateOembedUrl } from './util';
 
 function getMetaTags(host: string, userHandler: string, postId: string, post: ThreadViewPost): string[] {
 	const author = post.thread.post.author;
 	const postUrl = `https://bsky.app/profile/${userHandler}/post/${postId}`;
 	const description = post.thread.post.record.text;
+	const { likeCount, replyCount, repostCount } = post.thread.post;
+	const title = `💬 ${replyCount} 🔁 ${repostCount} ❤️ ${likeCount}`;
+	const oembedJsonUrl = generateOembedUrl(host, postUrl, `${author.displayName} (@${author.handle})`, description, title);
 
 	const metaTags = [
 		`<meta charset="utf-8" />`,
@@ -11,14 +15,13 @@ function getMetaTags(host: string, userHandler: string, postId: string, post: Th
 		`<meta name="twitter:title" content="@${userHandler}" />`,
 		`<meta property="og:site_name" content="bskye" />`,
 		`<meta property="og:url" content="${postUrl}" />`,
-		`<meta property="og:description" content="${description}" />`,
 		`<meta http-equiv="refresh" content="0; url = ${postUrl}" />`,
+		`<link rel="alternate" href="${oembedJsonUrl}" type="application/json+oembed" title="@${userHandler}" />`,
 	];
 
 	if (post.thread.post.record.embed?.video) {
 		const video = post.thread.post.record.embed.video;
 		const videoUrl = `https://bsky.social/xrpc/com.atproto.sync.getBlob?did=${author.did}&cid=${video.ref.$link}`;
-		const oembedJsonUrl = `${host}/oembed?text=${encodeURIComponent(description)}&url=${postUrl}`;
 
 		metaTags.push(
 			`<meta name="twitter:card" content="player" />`,
@@ -30,8 +33,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, post: Th
 			`<meta property="og:video:secure_url" content="${videoUrl}" />`,
 			`<meta property="og:video:type" content="${video.mimeType}" />`,
 			`<meta property="og:video:width" content="0" />`,
-			`<meta property="og:video:height" content="0" />`,
-			`<link rel="alternate" href="${oembedJsonUrl}" type="application/json+oembed" title="@${userHandler}" />`
+			`<meta property="og:video:height" content="0" />`
 		);
 		return metaTags;
 	}

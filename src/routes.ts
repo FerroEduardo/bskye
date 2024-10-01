@@ -29,18 +29,18 @@ export async function getPost(c: Context) {
 }
 
 export async function oembed(c: Context) {
-	const text = c.req.query('text');
-	const postUrl = c.req.query('url');
-	if (!text || !postUrl) {
+	const { author, title, provider, link } = c.req.query();
+
+	if (!author || !link || !title || !provider) {
 		return c.json({ message: 'missing parameters' }, { status: 400 });
 	}
 
 	return c.json({
-		author_name: text,
-		author_url: postUrl,
-		provider_name: 'bskye',
-		provider_url: 'https://bskye.app/',
-		title: 'bskye',
+		author_name: decodeURIComponent(author),
+		author_url: decodeURIComponent(link),
+		provider_name: `bskye - ${decodeURIComponent(provider)}`,
+		provider_url: decodeURIComponent(link),
+		title: `bskye - ${decodeURIComponent(title)}`,
 		type: 'link',
 		version: '1.0',
 	});
