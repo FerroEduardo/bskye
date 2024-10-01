@@ -1,11 +1,10 @@
 import {} from 'cloudflare:test';
-import { describe, it, expect } from 'vitest';
-import worker from '../src/index';
+import { describe, expect, it } from 'vitest';
 
 const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
 
 describe('worker', () => {
-	it('success', async () => {
-		expect('hello').toBe('hello');
-	});
+  it('success', async () => {
+    expect('hello').toBe('hello');
+  });
 });

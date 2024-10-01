@@ -8,31 +8,31 @@ const app = new Hono();
 app.use(trimTrailingSlash());
 
 app.get(
-	'*',
-	cache({
-		cacheName: 'bskye',
-		cacheControl: 'max-age=3600',
-	})
+  '*',
+  cache({
+    cacheName: 'bskye',
+    cacheControl: 'max-age=3600'
+  })
 );
 
 app.onError((err, c) => {
-	console.error(
-		JSON.stringify({
-			message: 'Internal error',
-			url: c.req.url,
-			error: {
-				name: err.name,
-				message: err.message,
-				stack: err.stack,
-			},
-		})
-	);
+  console.error(
+    JSON.stringify({
+      message: 'Internal error',
+      url: c.req.url,
+      error: {
+        name: err.name,
+        message: err.message,
+        stack: err.stack
+      }
+    })
+  );
 
-	return c.json({ message: 'Internal error' }, { status: 500 });
+  return c.json({ message: 'Internal error' }, { status: 500 });
 });
 
 app.get('/', (c) => {
-	return c.redirect('https://github.com/FerroEduardo/bskye');
+  return c.redirect('https://github.com/FerroEduardo/bskye');
 });
 
 app.get('/profile/:userHandler/post/:postId', getPost);
