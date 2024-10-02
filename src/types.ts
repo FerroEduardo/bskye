@@ -127,3 +127,23 @@ export interface ThreadViewPost {
     };
   };
 }
+
+export interface Profile {
+  did: string;
+  handle: string;
+  displayName: string;
+  avatar?: string;
+  associated: {
+    lists: number;
+    feedgens: number;
+    starterPacks: number;
+    labeler: boolean;
+  };
+  description?: string;
+  labels: any[];
+  createdAt: string;
+  indexedAt: string;
+  followersCount: number;
+  followsCount: number;
+  postsCount: number;
+}

@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { cache } from 'hono/cache';
 import { trimTrailingSlash } from 'hono/trailing-slash';
-import { getPost, oembed } from './routes';
+import { getPost, getProfile, oembed } from './routes';
 
 const app = new Hono();
 
@@ -36,6 +36,7 @@ app.get('/', (c) => {
 });
 
 app.get('/profile/:userHandler/post/:postId', getPost);
+app.get('/profile/:userHandler', getProfile);
 app.get('/oembed', oembed);
 
 export default app;

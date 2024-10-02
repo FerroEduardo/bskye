@@ -1,5 +1,5 @@
-import { ThreadViewPost } from './types';
-import { generateOembedUrl } from './util';
+import { ThreadViewPost } from '../types';
+import { generateOembedUrl } from '../util';
 
 function getMetaTags(host: string, userHandler: string, postId: string, post: ThreadViewPost): string[] {
   const author = post.thread.post.author;
