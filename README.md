@@ -2,12 +2,15 @@
 
 # bskye
 
-Embed Bluesky videos, GIFs and images on Discord.
+**Embed Bluesky videos, GIFs and images on Discord.**
+
+Written in TypeScript as a [Cloudflare Worker](https://workers.cloudflare.com/).
+
 [![Production](https://github.com/FerroEduardo/bskye/actions/workflows/deploy-production.yaml/badge.svg)](https://github.com/FerroEduardo/bskye/actions/workflows/deploy-production.yaml)
+[![Test](https://github.com/FerroEduardo/bskye/actions/workflows/test.yaml/badge.svg)](https://github.com/FerroEduardo/bskye/actions/workflows/test.yaml)
 </div>
 
 
-Written in TypeScript as a [Cloudflare Worker](https://workers.cloudflare.com/).
 
 ----
 
