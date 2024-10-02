@@ -4,10 +4,11 @@
   "license": "MIT",
   "description": "Embed Bluesky videos, GIFs and images on Discord",
   "scripts": {
-    "deploy": "wrangler deploy",
+    "deploy:production": "wrangler deploy --name=bskye --route bskye.app",
+    "deploy:staging": "wrangler deploy --name=staging-bskye --route staging.bskye.app",
     "dev": "wrangler dev",
-    "start": "wrangler dev",
     "test": "vitest run",
+    "test:watch": "vitest watch",
     "cf-typegen": "wrangler types",
     "lint": "eslint --fix src/**/*.ts",
     "lint:check": "eslint src/**/*.ts"
