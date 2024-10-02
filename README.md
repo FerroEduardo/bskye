@@ -1,6 +1,11 @@
+<div align="center">
+
 # bskye
 
 Embed Bluesky videos, GIFs and images on Discord.
+[![Production](https://github.com/FerroEduardo/bskye/actions/workflows/deploy-production.yaml/badge.svg)](https://github.com/FerroEduardo/bskye/actions/workflows/deploy-production.yaml)
+</div>
+
 
 Written in TypeScript as a [Cloudflare Worker](https://workers.cloudflare.com/).
 

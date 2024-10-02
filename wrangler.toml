@@ -5,9 +5,5 @@ minify = true
 compatibility_date = "2024-09-25"
 compatibility_flags = ["nodejs_compat"]
 
-routes = [
-  { pattern = "bskye.app", custom_domain = true }
-]
-
 [observability]
 enabled = true
