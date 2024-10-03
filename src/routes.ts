@@ -1,7 +1,6 @@
 import { Context } from 'hono';
 import { getPostThread, getProfile as getProfileData } from './bluesky';
-import { render as renderPost } from './template/post';
-import { render as renderProfile } from './template/profile';
+import { getPlatform } from './template';
 import { convertPostUrlToAtPostUri } from './util';
 
 export async function getPost(c: Context) {
@@ -26,7 +25,8 @@ export async function getPost(c: Context) {
   }
 
   const url = new URL(c.req.url);
-  return c.html(renderPost(`${url.protocol}//${url.host}`, userHandler, postId, postThread));
+  const platform = getPlatform(c.req.header('user-agent'));
+  return c.html(platform.renderPost(`${url.protocol}//${url.host}`, userHandler, postId, postThread));
 }
 
 export async function getProfile(c: Context) {
@@ -50,7 +50,8 @@ export async function getProfile(c: Context) {
   }
 
   const url = new URL(c.req.url);
-  return c.html(renderProfile(`${url.protocol}//${url.host}`, user));
+  const platform = getPlatform(c.req.header('user-agent'));
+  return c.html(platform.renderProfile(`${url.protocol}//${url.host}`, user));
 }
 
 export async function oembed(c: Context) {

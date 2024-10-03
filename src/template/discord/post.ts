@@ -2,7 +2,7 @@ import { isView as isExternalView } from '@atproto/api/dist/client/types/app/bsk
 import { isView as isViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { isMain as isMainVideo, type Main as MainVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { generateOembedUrl } from '../util';
+import { generateOembedUrl } from '../../util';
 
 function getMetaTags(host: string, userHandler: string, postId: string, thread: ThreadViewPost): string[] {
   const author = thread.post.author;

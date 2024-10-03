@@ -1,5 +1,5 @@
 import { type OutputSchema as Profile } from '@atproto/api/dist/client/types/app/bsky/actor/getProfile';
-import { generateOembedUrl } from '../util';
+import { generateOembedUrl } from '../../util';
 
 function getMetaTags(host: string, profile: Profile): string[] {
   const profileUrl = `https://bsky.app/profile/${profile.handle}/`;
