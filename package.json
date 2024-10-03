@@ -27,6 +27,7 @@
     "wrangler": "^3.60.3"
   },
   "dependencies": {
+    "@atproto/api": "^0.13.9",
     "hono": "^4.6.3"
   }
 }
