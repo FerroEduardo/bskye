@@ -25,7 +25,7 @@ export async function getPost(c: Context) {
   }
 
   const url = new URL(c.req.url);
-  const platform = getPlatform(c.req.header('user-agent'));
+  const platform = getPlatform(c.get('platform-name'));
   return c.html(platform.renderPost(`${url.protocol}//${url.host}`, userHandler, postId, postThread));
 }
 
@@ -50,7 +50,7 @@ export async function getProfile(c: Context) {
   }
 
   const url = new URL(c.req.url);
-  const platform = getPlatform(c.req.header('user-agent'));
+  const platform = getPlatform(c.get('platform-name'));
   return c.html(platform.renderProfile(`${url.protocol}//${url.host}`, user));
 }
 
