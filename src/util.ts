@@ -6,3 +6,5 @@ export function generateOembedUrl(host: string, link: string, title: string, aut
   const params = new URLSearchParams({ author, link, title, provider });
   return `${host}/oembed?${params}`;
 }
+
+export const metricsFormatter = Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 });

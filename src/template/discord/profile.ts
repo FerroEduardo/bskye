@@ -1,10 +1,21 @@
 import { type OutputSchema as Profile } from '@atproto/api/dist/client/types/app/bsky/actor/getProfile';
-import { generateOembedUrl } from '../../util';
+import { generateOembedUrl, metricsFormatter } from '../../util';
 
 function getMetaTags(host: string, profile: Profile): string[] {
   const profileUrl = `https://bsky.app/profile/${profile.handle}/`;
   const description = profile.description ?? '';
-  const title = '';
+  const { followersCount, followsCount, postsCount } = profile;
+
+  let title = '';
+  if (followersCount !== undefined) {
+    title += `👥 ${metricsFormatter.format(followersCount)} `;
+  }
+  if (followsCount !== undefined) {
+    title += `➡️ ${metricsFormatter.format(followsCount)} `;
+  }
+  if (postsCount !== undefined) {
+    title += `📸 ${metricsFormatter.format(postsCount)}`;
+  }
   const oembedJsonUrl = generateOembedUrl(host, profileUrl, `${profile.displayName} (@${profile.handle})`, description, title);
 
   const metaTags = [

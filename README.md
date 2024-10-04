@@ -2,7 +2,7 @@
 
 # bskye
 
-**Embed Bluesky videos, GIFs and images on Discord.**
+**Embed Bluesky videos, GIFs and images on Discord, WhatsApp and Telegram.**
 
 Written in TypeScript as a [Cloudflare Worker](https://workers.cloudflare.com/).
 
@@ -10,21 +10,27 @@ Written in TypeScript as a [Cloudflare Worker](https://workers.cloudflare.com/).
 [![Test](https://github.com/FerroEduardo/bskye/actions/workflows/test.yaml/badge.svg)](https://github.com/FerroEduardo/bskye/actions/workflows/test.yaml)
 </div>
 
-
-
 ----
 
 ## Add `e` after `bsky` to make it `bskye.app`
 
 ## Embed Videos
 
-![](/.docs/embed-example/video.png)
+![Video Embed Example](/.docs/embed-example/video.png)
 
 ## Embed GIFs
 
-![](/.docs/embed-example/gif.png)
+![GIF Embed Example](/.docs/embed-example/gif.png)
 
 ## Embed Images
 
-![](/.docs/embed-example/single-image.png)
-![](/.docs/embed-example/multiple-images.png)
+![Single Image Embed Example](/.docs/embed-example/single-image.png)
+![Multiple Images Embed Example](/.docs/embed-example/multiple-images.png)
+
+## Embed Profiles
+
+![Profile Embed Example](/.docs/embed-example/profile.png)
+
+## Disclaimer
+
+While bskye supports Discord, full functionality for WhatsApp and Telegram may be limited.

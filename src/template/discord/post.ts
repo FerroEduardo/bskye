@@ -2,7 +2,7 @@ import { isView as isExternalView } from '@atproto/api/dist/client/types/app/bsk
 import { isView as isViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { isMain as isMainVideo, type Main as MainVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { generateOembedUrl } from '../../util';
+import { generateOembedUrl, metricsFormatter } from '../../util';
 
 function getMetaTags(host: string, userHandler: string, postId: string, thread: ThreadViewPost): string[] {
   const author = thread.post.author;
@@ -10,7 +10,17 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const description = (thread.post.record as any).text ?? '';
   const { likeCount, replyCount, repostCount } = thread.post;
-  const title = `💬 ${replyCount} 🔁 ${repostCount} ❤️ ${likeCount}`;
+
+  let title = '';
+  if (replyCount !== undefined) {
+    title += `💬 ${metricsFormatter.format(replyCount)} `;
+  }
+  if (repostCount !== undefined) {
+    title += `🔁 ${metricsFormatter.format(repostCount)} `;
+  }
+  if (likeCount !== undefined) {
+    title += `❤️ ${metricsFormatter.format(likeCount)}`;
+  }
   const oembedJsonUrl = generateOembedUrl(host, postUrl, `${author.displayName} (@${author.handle})`, description, title);
 
   const metaTags = [
