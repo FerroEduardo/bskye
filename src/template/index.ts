@@ -19,7 +19,7 @@ export function getPlatformName(userAgent?: string): string | undefined {
     return 'whatsapp';
   }
 
-  // TODO: TelegramBot (like TwitterBot)
+  // TelegramBot (like TwitterBot)
   if (userAgent.includes('telegram')) {
     return 'whatsapp';
   }

@@ -13,7 +13,8 @@ function getMetaTags(host: string, profile: Profile): string[] {
     `<meta property="og:description" content="${description}" />`,
     `<meta property="og:site_name" content="bskye" />`,
     `<meta property="og:url" content="${profileUrl}" />`,
-    `<meta http-equiv="refresh" content="0; url = ${profileUrl}" />`
+    `<meta http-equiv="refresh" content="0; url = ${profileUrl}" />`,
+    `<meta name="twitter:card" content="summary_large_image">`
   ];
 
   if (profile.avatar) {
