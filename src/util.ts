@@ -244,5 +244,6 @@ export function getPostImages(thread: ThreadViewPost): BskyeImage | undefined {
 }
 
 function getVideoUrl(authorDid: string, videoCid: string) {
-  return `https://bsky.social/xrpc/com.atproto.sync.getBlob?did=${authorDid}&cid=${videoCid}`;
+  const randomNumber = Math.floor(Math.random() * 100); // Prevent Discord ban/rate limit video
+  return `https://bsky.social/xrpc/com.atproto.sync.getBlob?did=${authorDid}&cid=${videoCid}&r=${randomNumber}`;
 }
