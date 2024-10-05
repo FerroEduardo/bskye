@@ -7,7 +7,7 @@ import {
 import { isMain as isMainVideo, isView as isViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { isRecord as isPostRecord } from '@atproto/api/dist/client/types/app/bsky/feed/post';
-import { BskyeImage, BskyeVideo } from './types';
+import { BskyeImage, BskyeVideo, QuotedPost } from './types';
 
 export function convertPostUrlToAtPostUri(userHandler: string, postId: string): string {
   return `at://${userHandler}/app.bsky.feed.post/${postId}`;
@@ -138,6 +138,15 @@ export function getPostImages(thread: ThreadViewPost): BskyeImage | undefined {
   if (isViewImage(thread.post.embed)) {
     const image = thread.post.embed;
 
+    const record = thread.post.record;
+    const quotedPost: QuotedPost | undefined =
+      isPostRecord(record) && isViewRecord(record.record) && isPostRecord(record.record.value)
+        ? {
+            author: record.record.author,
+            text: record.record.value.text
+          }
+        : undefined;
+
     return {
       author: threadAuthor,
       images: image.images.map((img) => {
@@ -163,13 +172,23 @@ export function getPostImages(thread: ThreadViewPost): BskyeImage | undefined {
           aspectRatio: aspectRatio,
           alt: img.alt
         };
-      })
+      }),
+      quotedPost: quotedPost
     };
   }
 
   // Image with quoted post
   if (isViewRecordWithMedia(thread.post.embed) && isViewImage(thread.post.embed.media)) {
+    const quotedRecord = thread.post.embed;
     const image = thread.post.embed.media;
+
+    const quotedPost: QuotedPost | undefined =
+      isViewRecord(quotedRecord.record.record) && isPostRecord(quotedRecord.record.record.value)
+        ? {
+            author: quotedRecord.record.record.author,
+            text: quotedRecord.record.record.value.text
+          }
+        : undefined;
 
     return {
       author: threadAuthor,
@@ -196,7 +215,8 @@ export function getPostImages(thread: ThreadViewPost): BskyeImage | undefined {
           aspectRatio: aspectRatio,
           alt: img.alt
         };
-      })
+      }),
+      quotedPost: quotedPost
     };
   }
 
@@ -205,6 +225,12 @@ export function getPostImages(thread: ThreadViewPost): BskyeImage | undefined {
     const quotedRecord = thread.post.embed.record;
     const quotedAuthor = quotedRecord.author;
     const quotedEmbeds = quotedRecord.embeds;
+    const quotedPost: QuotedPost | undefined = isPostRecord(quotedRecord.value)
+      ? {
+          author: quotedRecord.author,
+          text: quotedRecord.value.text
+        }
+      : undefined;
 
     if (quotedEmbeds && quotedEmbeds.length > 0 && isViewImage(quotedEmbeds[0])) {
       // TODO: add warn if has more than 1 embed
@@ -235,7 +261,8 @@ export function getPostImages(thread: ThreadViewPost): BskyeImage | undefined {
             aspectRatio: aspectRatio,
             alt: img.alt
           };
-        })
+        }),
+        quotedPost: quotedPost
       };
     }
   }

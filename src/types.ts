@@ -18,6 +18,7 @@ export interface BskyeVideo {
       height: number;
     };
   };
+  quotedPost?: QuotedPost;
 }
 
 export interface BskyeImage {
@@ -31,4 +32,10 @@ export interface BskyeImage {
     };
     alt: string | undefined;
   }[];
+  quotedPost?: QuotedPost;
+}
+
+export interface QuotedPost {
+  author: ProfileViewBasic;
+  text: string;
 }

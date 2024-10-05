@@ -26,6 +26,8 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
     `<meta name="twitter:card" content="summary_large_image">`
   ];
 
+  // TODO: if post text is empty, try to use the text from quote (if present)
+
   const video = getPostVideo(thread);
   if (video) {
     const videoUrl = video.video.url;

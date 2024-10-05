@@ -36,6 +36,8 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
     `<link rel="alternate" href="${oembedJsonUrl}" type="application/json+oembed" title="@${escapeHtml(userHandler)}" />`
   ];
 
+  // TODO: if post text is empty, try to use the text from quote (if present)
+
   const video = getPostVideo(thread);
   if (video) {
     const videoUrl = video.video.url;
