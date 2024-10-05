@@ -14,7 +14,12 @@ export function convertPostUrlToAtPostUri(userHandler: string, postId: string): 
 }
 
 export function generateOembedUrl(host: string, link: string, title: string, author: string, provider: string): string {
-  const params = new URLSearchParams({ author, link, title, provider });
+  const params = new URLSearchParams({
+    author: encodeURIComponent(author),
+    link: encodeURIComponent(link),
+    title: encodeURIComponent(title),
+    provider: encodeURIComponent(provider)
+  });
   return `${host}/oembed?${params}`;
 }
 
