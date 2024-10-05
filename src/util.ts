@@ -1,11 +1,13 @@
 import { View as ImageView, isView as isViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { isView as isRecordView, isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import {
   isMain as isRecordWithMedia,
   isView as isViewRecordWithMedia
 } from '@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia';
-import { isMain as isMainVideo, Main as Video } from '@atproto/api/dist/client/types/app/bsky/embed/video';
+import { isMain as isMainVideo, isView as isViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { isRecord } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+import { isRecord as isPostRecord } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+import { BskyeVideo } from './types';
 
 export function convertPostUrlToAtPostUri(userHandler: string, postId: string): string {
   return `at://${userHandler}/app.bsky.feed.post/${postId}`;
@@ -30,18 +32,99 @@ export function getUserDisplayString(displayName: string | undefined, handle: st
   return `@${handle}`;
 }
 
-export function getPostVideo(thread: ThreadViewPost): Video | undefined {
-  if (!isRecord(thread.post.record)) {
+export function getPostVideo(thread: ThreadViewPost): BskyeVideo | undefined {
+  const threadAuthor = thread.post.author;
+  const record = thread.post.record;
+  if (!isPostRecord(record)) {
     return undefined;
   }
 
-  const record = thread.post.record;
+  // Video without quoted post
   if (isMainVideo(record.embed)) {
-    return record.embed;
+    const video = record.embed;
+    const thumbnailUrl = isViewVideo(thread.post.embed) ? thread.post.embed.thumbnail : undefined;
+    let aspectRatio;
+    if (video.aspectRatio) {
+      aspectRatio = {
+        width: video.aspectRatio.width,
+        height: video.aspectRatio.height
+      };
+    }
+
+    return {
+      author: thread.post.author,
+      video: {
+        url: getVideoUrl(threadAuthor.did, video.video.ref),
+        thumbnailUrl: thumbnailUrl,
+        aspectRatio: aspectRatio,
+        mimeType: video.video.mimeType
+      }
+    };
   }
 
+  // Video with quoted post
   if (isRecordWithMedia(record.embed) && isMainVideo(record.embed.media)) {
-    return record.embed.media;
+    const video = record.embed.media;
+    let aspectRatio;
+    if (video.aspectRatio) {
+      aspectRatio = {
+        width: video.aspectRatio.width,
+        height: video.aspectRatio.height
+      };
+    }
+
+    let thumbnailUrl: string | undefined;
+    if (isRecordWithMedia(thread.post.embed) && isViewVideo(thread.post.embed.media)) {
+      thumbnailUrl = thread.post.embed.media.thumbnail;
+    }
+
+    return {
+      author: thread.post.author,
+      video: {
+        url: getVideoUrl(threadAuthor.did, video.video.ref),
+        thumbnailUrl: thumbnailUrl,
+        aspectRatio: aspectRatio,
+        mimeType: video.video.mimeType
+      }
+    };
+  }
+
+  // Post with no media and quoted post has video
+  if (isRecordView(thread.post.embed) && isViewRecord(thread.post.embed.record)) {
+    const quotedRecord = thread.post.embed.record;
+    const quotedVideoAuthor = quotedRecord.author;
+    const quotedEmbeds = quotedRecord.embeds;
+
+    if (quotedEmbeds && quotedEmbeds.length > 0 && isViewVideo(quotedEmbeds[0])) {
+      const video = quotedEmbeds[0];
+
+      let aspectRatio;
+      if (video.aspectRatio) {
+        aspectRatio = {
+          width: video.aspectRatio.width,
+          height: video.aspectRatio.height
+        };
+      }
+
+      let mimeType: string | undefined;
+      if (isPostRecord(quotedRecord.value)) {
+        const post = quotedRecord.value;
+        if (isMainVideo(post.embed)) {
+          const video = post.embed;
+          mimeType = video.video.mimeType;
+        }
+      }
+
+      return {
+        author: thread.post.author,
+        video: {
+          url: getVideoUrl(quotedVideoAuthor.did, video.cid),
+          thumbnailUrl: video.thumbnail,
+          aspectRatio: aspectRatio,
+          mimeType: mimeType
+        }
+      };
+    }
   }
 
   return undefined;
@@ -52,11 +135,13 @@ export function getPostImages(thread: ThreadViewPost): ImageView | undefined {
     return thread.post.embed;
   }
 
-  console.log({ embed: thread.post.embed });
-
   if (isViewRecordWithMedia(thread.post.embed) && isViewImage(thread.post.embed.media)) {
     return thread.post.embed.media;
   }
 
   return undefined;
+}
+
+function getVideoUrl(authorDid: string, videoCid: string) {
+  return `https://bsky.social/xrpc/com.atproto.sync.getBlob?did=${authorDid}&cid=${videoCid}`;
 }

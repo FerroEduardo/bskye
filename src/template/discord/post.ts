@@ -38,8 +38,8 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
 
   const video = getPostVideo(thread);
   if (video) {
-    const mimeType = video.video.mimeType;
-    const videoUrl = `https://bsky.social/xrpc/com.atproto.sync.getBlob?did=${author.did}&cid=${video.video.ref}`;
+    const videoUrl = video.video.url;
+    const mimeType = video.video.mimeType ?? 'video/mp4';
 
     metaTags.push(
       `<meta name="twitter:card" content="player" />`,
