@@ -2,18 +2,20 @@ import { isView as isExternalView } from '@atproto/api/dist/client/types/app/bsk
 import { isView as isViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { isMain as isMainVideo, isView as isVideoView, type Main as MainVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { escapeHtml, getUserDisplayString } from '../../util';
 
 function getMetaTags(host: string, userHandler: string, postId: string, thread: ThreadViewPost): string[] {
   const author = thread.post.author;
   const postUrl = `https://bsky.app/profile/${userHandler}/post/${postId}`;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const description = (thread.post.record as any).text ?? '';
+  const description = (thread.post.record as any).text ? escapeHtml((thread.post.record as any).text) : '';
+  const title = escapeHtml(getUserDisplayString(author.displayName, author.handle));
 
   const metaTags = [
     `<meta charset="utf-8" />`,
     `<meta name="theme-color" content="#0a7aff" />`,
     `<meta property="og:site_name" content="bskye" />`,
-    `<meta property="og:title" content="${author.displayName} (@${author.handle})" />`,
+    `<meta property="og:title" content="${title}" />`,
     `<meta property="og:description" content="${description}" />`,
     `<meta property="og:url" content="${postUrl}" />`,
     `<meta http-equiv="refresh" content="0; url = ${postUrl}" />`
@@ -58,7 +60,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
         `<meta property="og:image:type" content="${mimeType}" />`,
         `<meta property="og:image:width" content="600" />`,
         `<meta property="og:image:height" content="600" />`,
-        `<meta property="og:image:alt" content="${image.alt}" />`
+        `<meta property="og:image:alt" content="${escapeHtml(image.alt)}" />`
       );
     }
     return metaTags;
@@ -83,7 +85,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
         `<meta property="og:image:type" content="${mimeType}" />`,
         `<meta property="og:image:width" content="600" />`,
         `<meta property="og:image:height" content="600" />`,
-        `<meta property="og:image:alt" content="${external.title}" />`
+        `<meta property="og:image:alt" content="${escapeHtml(external.title)}" />`
       );
       return metaTags;
     }

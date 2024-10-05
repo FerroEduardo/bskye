@@ -2,14 +2,16 @@ import { isView as isExternalView } from '@atproto/api/dist/client/types/app/bsk
 import { isView as isViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { isMain as isMainVideo, type Main as MainVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { generateOembedUrl, metricsFormatter } from '../../util';
+import { escapeHtml, generateOembedUrl, getUserDisplayString, metricsFormatter } from '../../util';
 
 function getMetaTags(host: string, userHandler: string, postId: string, thread: ThreadViewPost): string[] {
   const author = thread.post.author;
   const postUrl = `https://bsky.app/profile/${userHandler}/post/${postId}`;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const description = (thread.post.record as any).text ?? '';
+  const description = (thread.post.record as any).text ? escapeHtml((thread.post.record as any).text) : '';
   const { likeCount, replyCount, repostCount } = thread.post;
+
+  const userDisplayString = escapeHtml(getUserDisplayString(author.displayName, author.handle));
 
   let title = '';
   if (replyCount !== undefined) {
@@ -21,16 +23,16 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
   if (likeCount !== undefined) {
     title += `❤️ ${metricsFormatter.format(likeCount)}`;
   }
-  const oembedJsonUrl = generateOembedUrl(host, postUrl, `${author.displayName} (@${author.handle})`, description, title);
+  const oembedJsonUrl = generateOembedUrl(host, postUrl, userDisplayString, description, title);
 
   const metaTags = [
     `<meta charset="utf-8" />`,
     `<meta name="theme-color" content="#0a7aff" />`,
-    `<meta name="twitter:title" content="${author.displayName} (@${author.handle})" />`,
+    `<meta name="twitter:title" content="${userDisplayString}" />`,
     `<meta property="og:site_name" content="bskye" />`,
     `<meta property="og:url" content="${postUrl}" />`,
     `<meta http-equiv="refresh" content="0; url = ${postUrl}" />`,
-    `<link rel="alternate" href="${oembedJsonUrl}" type="application/json+oembed" title="@${userHandler}" />`
+    `<link rel="alternate" href="${oembedJsonUrl}" type="application/json+oembed" title="@${escapeHtml(userHandler)}" />`
   ];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -73,7 +75,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
         `<meta property="og:image:type" content="${mimeType}" />`,
         `<meta property="og:image:width" content="0" />`,
         `<meta property="og:image:height" content="0" />`,
-        `<meta property="og:image:alt" content="${image.alt}" />`
+        `<meta property="og:image:alt" content="${escapeHtml(image.alt)}" />`
       );
     }
     return metaTags;
@@ -92,7 +94,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
       `<meta property="og:image:type" content="image/jpeg" />`,
       `<meta property="og:image:width" content="0" />`,
       `<meta property="og:image:height" content="0" />`,
-      `<meta property="og:image:alt" content="${external.title}" />`
+      `<meta property="og:image:alt" content="${escapeHtml(external.title)}" />`
     );
     return metaTags;
   }

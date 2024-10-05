@@ -1,10 +1,12 @@
 import { type OutputSchema as Profile } from '@atproto/api/dist/client/types/app/bsky/actor/getProfile';
-import { generateOembedUrl, metricsFormatter } from '../../util';
+import { escapeHtml, generateOembedUrl, getUserDisplayString, metricsFormatter } from '../../util';
 
 function getMetaTags(host: string, profile: Profile): string[] {
   const profileUrl = `https://bsky.app/profile/${profile.handle}/`;
-  const description = profile.description ?? '';
+  const description = profile.description ? escapeHtml(profile.description) : '';
   const { followersCount, followsCount, postsCount } = profile;
+
+  const userDisplayString = escapeHtml(getUserDisplayString(profile.displayName, profile.handle));
 
   let title = '';
   if (followersCount !== undefined) {
@@ -16,16 +18,16 @@ function getMetaTags(host: string, profile: Profile): string[] {
   if (postsCount !== undefined) {
     title += `📸 ${metricsFormatter.format(postsCount)}`;
   }
-  const oembedJsonUrl = generateOembedUrl(host, profileUrl, `${profile.displayName} (@${profile.handle})`, description, title);
+  const oembedJsonUrl = generateOembedUrl(host, profileUrl, userDisplayString, description, title);
 
   const metaTags = [
     `<meta charset="utf-8" />`,
     `<meta name="theme-color" content="#0a7aff" />`,
-    `<meta name="twitter:title" content="${profile.displayName} (@${profile.handle})" />`,
+    `<meta name="twitter:title" content="${userDisplayString}" />`,
     `<meta property="og:site_name" content="bskye" />`,
     `<meta property="og:url" content="${profileUrl}" />`,
     `<meta http-equiv="refresh" content="0; url = ${profileUrl}" />`,
-    `<link rel="alternate" href="${oembedJsonUrl}" type="application/json+oembed" title="@${profile.handle}" />`
+    `<link rel="alternate" href="${oembedJsonUrl}" type="application/json+oembed" title="@${escapeHtml(profile.handle)}" />`
   ];
 
   if (profile.avatar) {
@@ -37,7 +39,7 @@ function getMetaTags(host: string, profile: Profile): string[] {
       `<meta property="og:image:type" content="image/jpeg" />`,
       `<meta property="og:image:width" content="0" />`,
       `<meta property="og:image:height" content="0" />`,
-      `<meta property="og:image:alt" content="${profile.displayName}" />`
+      `<meta property="og:image:alt" content="${profile.displayName ? escapeHtml(profile.displayName) : ''}" />`
     );
   }
 
