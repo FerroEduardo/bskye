@@ -57,12 +57,12 @@ export async function getProfile(c: Context) {
 export async function oembed(c: Context) {
   const { author, title, provider, link } = c.req.query();
 
-  if (!author || !link || !title) {
+  if (!link || !title) {
     return c.json({ message: 'missing parameters' }, { status: 400 });
   }
 
   return c.json({
-    author_name: decodeURIComponent(author),
+    author_name: author ? decodeURIComponent(author) : '',
     author_url: decodeURIComponent(link),
     provider_name: `bskye${provider ? ' - ' + decodeURIComponent(provider) : ''}`,
     provider_url: decodeURIComponent(link),

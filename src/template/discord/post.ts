@@ -24,7 +24,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
   if (likeCount !== undefined) {
     title += `❤️ ${metricsFormatter.format(likeCount)}`;
   }
-  const oembedJsonUrl = generateOembedUrl(host, postUrl, userDisplayString, description, title);
+  const oembedJsonUrl = generateOembedUrl(host, postUrl, userDisplayString, '', title);
 
   const metaTags = [
     `<meta charset="utf-8" />`,
@@ -33,6 +33,8 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
     `<meta property="og:site_name" content="bskye" />`,
     `<meta property="og:url" content="${postUrl}" />`,
     `<meta http-equiv="refresh" content="0; url = ${postUrl}" />`,
+    `<meta property="description" content="${description}" />`,
+    `<meta property="og:description" content="${description}" />`,
     `<link rel="alternate" href="${oembedJsonUrl}" type="application/json+oembed" title="@${escapeHtml(userHandler)}" />`
   ];
 
