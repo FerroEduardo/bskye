@@ -1,14 +1,17 @@
 import { isView as isExternalView } from '@atproto/api/dist/client/types/app/bsky/embed/external';
-import { isView as isViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
-import { isMain as isMainVideo, isView as isVideoView, type Main as MainVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
+import { isMain as isRecordWithMedia } from '@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { escapeHtml, getUserDisplayString } from '../../util';
+import { isRecord } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+import { escapeHtml, getPostImages, getPostVideo, getUserDisplayString } from '../../util';
 
 function getMetaTags(host: string, userHandler: string, postId: string, thread: ThreadViewPost): string[] {
+  if (!isRecord(thread.post.record)) {
+    throw new Error('Post record not found');
+  }
   const author = thread.post.author;
   const postUrl = `https://bsky.app/profile/${userHandler}/post/${postId}`;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const description = (thread.post.record as any).text ? escapeHtml((thread.post.record as any).text) : '';
+
+  const description = thread.post.record.text ? escapeHtml(thread.post.record.text) : '';
   const title = escapeHtml(getUserDisplayString(author.displayName, author.handle));
 
   const metaTags = [
@@ -23,10 +26,8 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
     `<meta name="twitter:card" content="summary_large_image">`
   ];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (isMainVideo((thread.post.record as any)?.embed) && isVideoView(thread.post.embed)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const video = (thread.post.record as any)?.embed as MainVideo;
+  const video = getPostVideo(thread);
+  if (video) {
     const mimeType = video.video.mimeType;
     const videoUrl = `https://bsky.social/xrpc/com.atproto.sync.getBlob?did=${author.did}&cid=${video.video.ref}`;
 
@@ -38,16 +39,16 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
       `<meta property="og:video:height" content="0" />`
     );
 
-    const videoEmbed = thread.post.embed;
-    if (videoEmbed.thumbnail) {
-      metaTags.push(`<meta property="og:image" content="${videoEmbed.thumbnail}" />`);
+    if (isRecordWithMedia(thread.post.embed) && thread.post.embed.thumbnail) {
+      metaTags.push(`<meta property="og:image" content="${thread.post.embed.thumbnail}" />`);
     }
 
     return metaTags;
   }
 
-  if (isViewImage(thread.post.embed)) {
-    for (const image of thread.post.embed.images) {
+  const images = getPostImages(thread);
+  if (images) {
+    for (const image of images.images) {
       const imageUrl = image.fullsize;
       let mimeType = 'image/jpeg';
 

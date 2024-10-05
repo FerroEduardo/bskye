@@ -1,14 +1,15 @@
 import { isView as isExternalView } from '@atproto/api/dist/client/types/app/bsky/embed/external';
-import { isView as isViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
-import { isMain as isMainVideo, type Main as MainVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { escapeHtml, generateOembedUrl, getUserDisplayString, metricsFormatter } from '../../util';
+import { isRecord } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+import { escapeHtml, generateOembedUrl, getPostImages, getPostVideo, getUserDisplayString, metricsFormatter } from '../../util';
 
 function getMetaTags(host: string, userHandler: string, postId: string, thread: ThreadViewPost): string[] {
+  if (!isRecord(thread.post.record)) {
+    throw new Error('Post record not found');
+  }
   const author = thread.post.author;
   const postUrl = `https://bsky.app/profile/${userHandler}/post/${postId}`;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const description = (thread.post.record as any).text ? escapeHtml((thread.post.record as any).text) : '';
+  const description = thread.post.record.text ? escapeHtml(thread.post.record.text) : '';
   const { likeCount, replyCount, repostCount } = thread.post;
 
   const userDisplayString = escapeHtml(getUserDisplayString(author.displayName, author.handle));
@@ -35,10 +36,8 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
     `<link rel="alternate" href="${oembedJsonUrl}" type="application/json+oembed" title="@${escapeHtml(userHandler)}" />`
   ];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (isMainVideo((thread.post.record as any)?.embed)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const video = (thread.post.record as any)?.embed as MainVideo;
+  const video = getPostVideo(thread);
+  if (video) {
     const mimeType = video.video.mimeType;
     const videoUrl = `https://bsky.social/xrpc/com.atproto.sync.getBlob?did=${author.did}&cid=${video.video.ref}`;
 
@@ -57,8 +56,9 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
     return metaTags;
   }
 
-  if (isViewImage(thread.post.embed)) {
-    for (const image of thread.post.embed.images) {
+  const images = getPostImages(thread);
+  if (images) {
+    for (const image of images.images) {
       const imageUrl = image.fullsize;
       let mimeType = 'image/jpeg';
 
