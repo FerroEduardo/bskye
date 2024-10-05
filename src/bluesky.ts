@@ -3,6 +3,7 @@ import { type ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsk
 import { isThreadViewPost, type ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 const agent = new Agent(new CredentialSession(new URL('https://public.api.bsky.app')));
+agent.setHeader('Accept-Encoding', 'br, gzip');
 
 export async function getPostThread(postAtUri: string): Promise<ThreadViewPost> {
   const res = await agent.getPostThread({
