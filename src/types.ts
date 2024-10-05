@@ -19,3 +19,16 @@ export interface BskyeVideo {
     };
   };
 }
+
+export interface BskyeImage {
+  author: ProfileViewBasic;
+  images: {
+    url: string;
+    mimeType: string | undefined;
+    aspectRatio?: {
+      width: number;
+      height: number;
+    };
+    alt: string | undefined;
+  }[];
+}

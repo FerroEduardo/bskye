@@ -49,7 +49,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
   const images = getPostImages(thread);
   if (images) {
     for (const image of images.images) {
-      const imageUrl = image.fullsize;
+      const imageUrl = image.url;
       let mimeType = 'image/jpeg';
 
       const atIndex = imageUrl.lastIndexOf('@');
@@ -63,7 +63,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
         `<meta property="og:image:type" content="${mimeType}" />`,
         `<meta property="og:image:width" content="600" />`,
         `<meta property="og:image:height" content="600" />`,
-        `<meta property="og:image:alt" content="${escapeHtml(image.alt)}" />`
+        `<meta property="og:image:alt" content="${image.alt ? escapeHtml(image.alt) : ''}" />`
       );
     }
     return metaTags;

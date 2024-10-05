@@ -1,4 +1,4 @@
-import { View as ImageView, isView as isViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { isView as isViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { isView as isRecordView, isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import {
   isMain as isRecordWithMedia,
@@ -7,7 +7,7 @@ import {
 import { isMain as isMainVideo, isView as isViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { isRecord as isPostRecord } from '@atproto/api/dist/client/types/app/bsky/feed/post';
-import { BskyeVideo } from './types';
+import { BskyeImage, BskyeVideo } from './types';
 
 export function convertPostUrlToAtPostUri(userHandler: string, postId: string): string {
   return `at://${userHandler}/app.bsky.feed.post/${postId}`;
@@ -96,6 +96,7 @@ export function getPostVideo(thread: ThreadViewPost): BskyeVideo | undefined {
     const quotedEmbeds = quotedRecord.embeds;
 
     if (quotedEmbeds && quotedEmbeds.length > 0 && isViewVideo(quotedEmbeds[0])) {
+      // TODO: add warn if has more than 1 embed
       const video = quotedEmbeds[0];
 
       let aspectRatio;
@@ -130,13 +131,113 @@ export function getPostVideo(thread: ThreadViewPost): BskyeVideo | undefined {
   return undefined;
 }
 
-export function getPostImages(thread: ThreadViewPost): ImageView | undefined {
+export function getPostImages(thread: ThreadViewPost): BskyeImage | undefined {
+  const threadAuthor = thread.post.author;
+
+  // Image without quoted post
   if (isViewImage(thread.post.embed)) {
-    return thread.post.embed;
+    const image = thread.post.embed;
+
+    return {
+      author: threadAuthor,
+      images: image.images.map((img) => {
+        const imageUrl = img.fullsize;
+        let mimeType = 'image/jpeg';
+
+        const atIndex = imageUrl.lastIndexOf('@');
+        if (atIndex !== -1) {
+          mimeType = `image/${imageUrl.slice(atIndex + 1)}`;
+        }
+
+        let aspectRatio;
+        if (img.aspectRatio) {
+          aspectRatio = {
+            width: img.aspectRatio.width,
+            height: img.aspectRatio.height
+          };
+        }
+
+        return {
+          url: img.fullsize,
+          mimeType: mimeType,
+          aspectRatio: aspectRatio,
+          alt: img.alt
+        };
+      })
+    };
   }
 
+  // Image with quoted post
   if (isViewRecordWithMedia(thread.post.embed) && isViewImage(thread.post.embed.media)) {
-    return thread.post.embed.media;
+    const image = thread.post.embed.media;
+
+    return {
+      author: threadAuthor,
+      images: image.images.map((img) => {
+        const imageUrl = img.fullsize;
+        let mimeType = 'image/jpeg';
+
+        const atIndex = imageUrl.lastIndexOf('@');
+        if (atIndex !== -1) {
+          mimeType = `image/${imageUrl.slice(atIndex + 1)}`;
+        }
+
+        let aspectRatio;
+        if (img.aspectRatio) {
+          aspectRatio = {
+            width: img.aspectRatio.width,
+            height: img.aspectRatio.height
+          };
+        }
+
+        return {
+          url: img.fullsize,
+          mimeType: mimeType,
+          aspectRatio: aspectRatio,
+          alt: img.alt
+        };
+      })
+    };
+  }
+
+  // Post with no media and quoted post has image
+  if (isRecordView(thread.post.embed) && isViewRecord(thread.post.embed.record)) {
+    const quotedRecord = thread.post.embed.record;
+    const quotedAuthor = quotedRecord.author;
+    const quotedEmbeds = quotedRecord.embeds;
+
+    if (quotedEmbeds && quotedEmbeds.length > 0 && isViewImage(quotedEmbeds[0])) {
+      // TODO: add warn if has more than 1 embed
+      const image = quotedEmbeds[0];
+
+      return {
+        author: quotedAuthor,
+        images: image.images.map((img) => {
+          const imageUrl = img.fullsize;
+          let mimeType = 'image/jpeg';
+
+          const atIndex = imageUrl.lastIndexOf('@');
+          if (atIndex !== -1) {
+            mimeType = `image/${imageUrl.slice(atIndex + 1)}`;
+          }
+
+          let aspectRatio;
+          if (img.aspectRatio) {
+            aspectRatio = {
+              width: img.aspectRatio.width,
+              height: img.aspectRatio.height
+            };
+          }
+
+          return {
+            url: img.fullsize,
+            mimeType: mimeType,
+            aspectRatio: aspectRatio,
+            alt: img.alt
+          };
+        })
+      };
+    }
   }
 
   return undefined;
