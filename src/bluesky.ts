@@ -1,36 +1,52 @@
-import { Agent, CredentialSession } from '@atproto/api';
 import { type ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { isThreadViewPost, type ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
-const agent = new Agent(new CredentialSession(new URL('https://public.api.bsky.app')));
-agent.setHeader('Accept-Encoding', 'br, gzip');
-
 export async function getPostThread(postAtUri: string): Promise<ThreadViewPost> {
-  const res = await agent.getPostThread({
-    uri: postAtUri,
-    depth: 0,
-    parentHeight: 0
+  const url = `https://public.api.bsky.app/xrpc/app.bsky.feed.getPostThread?uri=${postAtUri}&depth=0&parentHeight`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+      'Accept-Encoding': 'br, gzip'
+    }
   });
 
-  if (!res.success) {
-    throw new Error(JSON.stringify(res));
+  if (!response.ok) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
   }
 
-  if (!isThreadViewPost(res.data.thread)) {
-    throw new Error('Post is invalid');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const body = (await response.json()) as any;
+
+  if (!isThreadViewPost(body?.thread)) {
+    throw new Error('invalid post');
   }
 
-  return res.data.thread;
+  return body.thread;
 }
 
 export async function getProfile(actor: string): Promise<ProfileViewDetailed> {
-  const res = await agent.getProfile({
-    actor
+  const url = `https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=${actor}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+      'Accept-Encoding': 'br, gzip'
+    }
   });
 
-  if (!res.success) {
-    throw new Error(JSON.stringify(res));
+  if (!response.ok) {
+    if (response.status === 400) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const body = (await response.json()) as any;
+      if (body.message === 'Profile not found') {
+        throw new Error(body.message);
+      }
+    }
+    throw new Error(`HTTP error! Status: ${response.status}`);
   }
 
-  return res.data;
+  const body = (await response.json()) as ProfileViewDetailed;
+
+  return body;
 }

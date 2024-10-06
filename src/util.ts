@@ -1,4 +1,4 @@
-import { isView as isViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { isView as isViewImage, View as ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { isView as isRecordView, isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import {
   isMain as isRecordWithMedia,
@@ -48,18 +48,12 @@ export function getPostVideo(thread: ThreadViewPost): BskyeVideo | undefined {
   if (isMainVideo(record.embed)) {
     const video = record.embed;
     const thumbnailUrl = isViewVideo(thread.post.embed) ? thread.post.embed.thumbnail : undefined;
-    let aspectRatio;
-    if (video.aspectRatio) {
-      aspectRatio = {
-        width: video.aspectRatio.width,
-        height: video.aspectRatio.height
-      };
-    }
+    const aspectRatio = getAspectRatio(video.aspectRatio);
 
     return {
       author: thread.post.author,
       video: {
-        url: getVideoUrl(threadAuthor.did, video.video.ref),
+        url: getVideoUrl(threadAuthor.did, video.video.ref.$link),
         thumbnailUrl: thumbnailUrl,
         aspectRatio: aspectRatio,
         mimeType: video.video.mimeType
@@ -70,13 +64,7 @@ export function getPostVideo(thread: ThreadViewPost): BskyeVideo | undefined {
   // Video with quoted post
   if (isRecordWithMedia(record.embed) && isMainVideo(record.embed.media)) {
     const video = record.embed.media;
-    let aspectRatio;
-    if (video.aspectRatio) {
-      aspectRatio = {
-        width: video.aspectRatio.width,
-        height: video.aspectRatio.height
-      };
-    }
+    const aspectRatio = getAspectRatio(video.aspectRatio);
 
     let thumbnailUrl: string | undefined;
     if (isRecordWithMedia(thread.post.embed) && isViewVideo(thread.post.embed.media)) {
@@ -86,7 +74,7 @@ export function getPostVideo(thread: ThreadViewPost): BskyeVideo | undefined {
     return {
       author: thread.post.author,
       video: {
-        url: getVideoUrl(threadAuthor.did, video.video.ref),
+        url: getVideoUrl(threadAuthor.did, video.video.ref.$link),
         thumbnailUrl: thumbnailUrl,
         aspectRatio: aspectRatio,
         mimeType: video.video.mimeType
@@ -104,13 +92,7 @@ export function getPostVideo(thread: ThreadViewPost): BskyeVideo | undefined {
       // TODO: add warn if has more than 1 embed
       const video = quotedEmbeds[0];
 
-      let aspectRatio;
-      if (video.aspectRatio) {
-        aspectRatio = {
-          width: video.aspectRatio.width,
-          height: video.aspectRatio.height
-        };
-      }
+      const aspectRatio = getAspectRatio(video.aspectRatio);
 
       let mimeType: string | undefined;
       if (isPostRecord(quotedRecord.value)) {
@@ -154,30 +136,7 @@ export function getPostImages(thread: ThreadViewPost): BskyeImage | undefined {
 
     return {
       author: threadAuthor,
-      images: image.images.map((img) => {
-        const imageUrl = img.fullsize;
-        let mimeType = 'image/jpeg';
-
-        const atIndex = imageUrl.lastIndexOf('@');
-        if (atIndex !== -1) {
-          mimeType = `image/${imageUrl.slice(atIndex + 1)}`;
-        }
-
-        let aspectRatio;
-        if (img.aspectRatio) {
-          aspectRatio = {
-            width: img.aspectRatio.width,
-            height: img.aspectRatio.height
-          };
-        }
-
-        return {
-          url: img.fullsize,
-          mimeType: mimeType,
-          aspectRatio: aspectRatio,
-          alt: img.alt
-        };
-      }),
+      images: mapImages(image),
       quotedPost: quotedPost
     };
   }
@@ -197,30 +156,7 @@ export function getPostImages(thread: ThreadViewPost): BskyeImage | undefined {
 
     return {
       author: threadAuthor,
-      images: image.images.map((img) => {
-        const imageUrl = img.fullsize;
-        let mimeType = 'image/jpeg';
-
-        const atIndex = imageUrl.lastIndexOf('@');
-        if (atIndex !== -1) {
-          mimeType = `image/${imageUrl.slice(atIndex + 1)}`;
-        }
-
-        let aspectRatio;
-        if (img.aspectRatio) {
-          aspectRatio = {
-            width: img.aspectRatio.width,
-            height: img.aspectRatio.height
-          };
-        }
-
-        return {
-          url: img.fullsize,
-          mimeType: mimeType,
-          aspectRatio: aspectRatio,
-          alt: img.alt
-        };
-      }),
+      images: mapImages(image),
       quotedPost: quotedPost
     };
   }
@@ -243,30 +179,7 @@ export function getPostImages(thread: ThreadViewPost): BskyeImage | undefined {
 
       return {
         author: quotedAuthor,
-        images: image.images.map((img) => {
-          const imageUrl = img.fullsize;
-          let mimeType = 'image/jpeg';
-
-          const atIndex = imageUrl.lastIndexOf('@');
-          if (atIndex !== -1) {
-            mimeType = `image/${imageUrl.slice(atIndex + 1)}`;
-          }
-
-          let aspectRatio;
-          if (img.aspectRatio) {
-            aspectRatio = {
-              width: img.aspectRatio.width,
-              height: img.aspectRatio.height
-            };
-          }
-
-          return {
-            url: img.fullsize,
-            mimeType: mimeType,
-            aspectRatio: aspectRatio,
-            alt: img.alt
-          };
-        }),
+        images: mapImages(image),
         quotedPost: quotedPost
       };
     }
@@ -278,4 +191,27 @@ export function getPostImages(thread: ThreadViewPost): BskyeImage | undefined {
 function getVideoUrl(authorDid: string, videoCid: string) {
   const randomNumber = Math.floor(Math.random() * 100); // Prevent Discord ban/rate limit video
   return `https://bsky.social/xrpc/com.atproto.sync.getBlob?did=${authorDid}&cid=${videoCid}&r=${randomNumber}`;
+}
+
+function getAspectRatio(aspectRatio?: { width: number; height: number }) {
+  return aspectRatio ? { width: aspectRatio.width, height: aspectRatio.height } : undefined;
+}
+
+function mapImages(images: ViewImage) {
+  return images.images.map((img) => {
+    const imageUrl = img.fullsize;
+    let mimeType = 'image/jpeg';
+    const atIndex = imageUrl.lastIndexOf('@');
+
+    if (atIndex !== -1) {
+      mimeType = `image/${imageUrl.slice(atIndex + 1)}`;
+    }
+
+    return {
+      url: imageUrl,
+      mimeType,
+      aspectRatio: getAspectRatio(img.aspectRatio),
+      alt: img.alt
+    };
+  });
 }
