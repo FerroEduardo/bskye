@@ -24,7 +24,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
   if (likeCount !== undefined) {
     title += `❤️ ${metricsFormatter.format(likeCount)}`;
   }
-  const oembedJsonUrl = generateOembedUrl(host, postUrl, userDisplayString, '', title);
+  const oembedJsonUrl = generateOembedUrl(host, postUrl, userDisplayString, description, title);
 
   const metaTags = [
     `<meta charset="utf-8" />`,
