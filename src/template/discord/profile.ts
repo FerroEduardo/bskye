@@ -4,7 +4,6 @@ import { escapeHtml, generateOembedUrl, getUserDisplayString, metricsFormatter }
 function getMetaTags(host: string, profile: Profile): string[] {
   const profileUrl = `https://bsky.app/profile/${profile.handle}/`;
   const description = escapeHtml(profile.description ?? '');
-  const safeDescription = description.length > 250 ? description.slice(0, 250) : description;
   const { followersCount, followsCount, postsCount } = profile;
 
   const userDisplayString = escapeHtml(getUserDisplayString(profile.displayName, profile.handle));
@@ -28,7 +27,7 @@ function getMetaTags(host: string, profile: Profile): string[] {
     `<meta property="og:site_name" content="bskye" />`,
     `<meta property="og:url" content="${profileUrl}" />`,
     `<meta http-equiv="refresh" content="0; url = ${profileUrl}" />`,
-    `<meta property="og:description" content="${safeDescription}" />`,
+    `<meta property="og:description" content="${description}" />`,
     `<link rel="alternate" href="${oembedJsonUrl}" type="application/json+oembed" title="@${escapeHtml(profile.handle)}" />`
   ];
 

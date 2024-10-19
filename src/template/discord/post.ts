@@ -10,7 +10,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
   const author = thread.post.author;
   const postUrl = `https://bsky.app/profile/${userHandler}/post/${postId}`;
   const description = escapeHtml(thread.post.record.text ?? '');
-  const safeDescription = description.length > 250 ? description.slice(0, 250) : description;
+  const oembedDescription = description.slice(0, 250);
   const { likeCount, replyCount, repostCount } = thread.post;
 
   const userDisplayString = escapeHtml(getUserDisplayString(author.displayName, author.handle));
@@ -33,7 +33,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
     `<meta property="og:site_name" content="bskye" />`,
     `<meta property="og:url" content="${postUrl}" />`,
     `<meta http-equiv="refresh" content="0; url = ${postUrl}" />`,
-    `<meta property="og:description" content="${safeDescription}" />`
+    `<meta property="og:description" content="${description}" />`
   ];
 
   // TODO: if post text is empty, try to use the text from quote (if present)
@@ -42,7 +42,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
   if (video) {
     const videoUrl = video.video.url;
     const mimeType = video.video.mimeType ?? 'video/mp4';
-    const oembedJsonUrl = generateOembedUrl(host, postUrl, userDisplayString, safeDescription, title);
+    const oembedJsonUrl = generateOembedUrl(host, postUrl, userDisplayString, oembedDescription, title);
 
     metaTags.push(
       `<meta name="twitter:card" content="player" />`,
