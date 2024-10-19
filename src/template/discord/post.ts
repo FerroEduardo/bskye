@@ -25,7 +25,6 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
   if (likeCount !== undefined) {
     title += `❤️ ${metricsFormatter.format(likeCount)}`;
   }
-  const oembedJsonUrl = generateOembedUrl(host, postUrl, userDisplayString, safeDescription, title);
 
   const metaTags = [
     `<meta charset="utf-8" />`,
@@ -33,7 +32,8 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
     `<meta name="twitter:title" content="${userDisplayString}" />`,
     `<meta property="og:site_name" content="bskye" />`,
     `<meta property="og:url" content="${postUrl}" />`,
-    `<meta http-equiv="refresh" content="0; url = ${postUrl}" />`
+    `<meta http-equiv="refresh" content="0; url = ${postUrl}" />`,
+    `<meta property="og:description" content="${safeDescription}" />`
   ];
 
   // TODO: if post text is empty, try to use the text from quote (if present)
@@ -42,6 +42,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
   if (video) {
     const videoUrl = video.video.url;
     const mimeType = video.video.mimeType ?? 'video/mp4';
+    const oembedJsonUrl = generateOembedUrl(host, postUrl, userDisplayString, safeDescription, title);
 
     metaTags.push(
       `<meta name="twitter:card" content="player" />`,
@@ -58,6 +59,9 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
     );
     return metaTags;
   }
+
+  const oembedJsonUrl = generateOembedUrl(host, postUrl, userDisplayString, '', title);
+  metaTags.push(`<link rel="alternate" href="${oembedJsonUrl}" type="application/json+oembed" title="@${escapeHtml(userHandler)}" />`);
 
   const images = getPostImages(thread);
   if (images) {
@@ -78,8 +82,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
         `<meta property="og:image:type" content="${mimeType}" />`,
         `<meta property="og:image:width" content="0" />`,
         `<meta property="og:image:height" content="0" />`,
-        `<meta property="og:image:alt" content="${image.alt ? escapeHtml(image.alt) : ''}" />`,
-        `<meta property="og:description" content="${description}" />`
+        `<meta property="og:image:alt" content="${image.alt ? escapeHtml(image.alt) : ''}" />`
       );
     }
     return metaTags;
@@ -98,13 +101,10 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
       `<meta property="og:image:type" content="image/jpeg" />`,
       `<meta property="og:image:width" content="0" />`,
       `<meta property="og:image:height" content="0" />`,
-      `<meta property="og:image:alt" content="${escapeHtml(external.title)}" />`,
-      `<meta property="og:description" content="${description}" />`
+      `<meta property="og:image:alt" content="${escapeHtml(external.title)}" />`
     );
     return metaTags;
   }
-
-  metaTags.push(`<meta property="og:description" content="${description}" />`);
 
   return metaTags;
 }
