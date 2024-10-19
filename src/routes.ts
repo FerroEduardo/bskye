@@ -5,7 +5,7 @@ import { convertPostUrlToAtPostUri } from './util';
 
 export async function getPost(c: Context) {
   const { postId, userHandler } = c.req.param();
-  const postAtUri = convertPostUrlToAtPostUri(userHandler, postId);
+  const postAtUri = convertPostUrlToAtPostUri(userHandler, postId.match('[^|]+')?.[0] ?? postId);
 
   let postThread;
   try {
@@ -34,7 +34,7 @@ export async function getProfile(c: Context) {
 
   let user;
   try {
-    user = await getProfileData(userHandler);
+    user = await getProfileData(userHandler.match('[^|]+')?.[0] ?? userHandler);
   } catch (err) {
     console.error(
       JSON.stringify({
