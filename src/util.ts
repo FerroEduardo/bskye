@@ -1,3 +1,5 @@
+import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { isView as isExternalView } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { isView as isViewImage, View as ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { isView as isRecordView, isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import {
@@ -7,7 +9,7 @@ import {
 import { isMain as isMainVideo, isView as isViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { isRecord as isPostRecord } from '@atproto/api/dist/client/types/app/bsky/feed/post';
-import { BskyeImage, BskyeVideo, QuotedPost } from './types';
+import { BskyeGif, BskyeImage, BskyeVideo, QuotedPost } from './types';
 
 export function convertPostUrlToAtPostUri(userHandler: string, postId: string): string {
   return `at://${userHandler}/app.bsky.feed.post/${postId}`;
@@ -67,8 +69,23 @@ export function getPostVideo(thread: ThreadViewPost): BskyeVideo | undefined {
     const aspectRatio = getAspectRatio(video.aspectRatio);
 
     let thumbnailUrl: string | undefined;
-    if (isRecordWithMedia(thread.post.embed) && isViewVideo(thread.post.embed.media)) {
-      thumbnailUrl = thread.post.embed.media.thumbnail;
+    let quotedPost: QuotedPost | undefined;
+    if (isRecordWithMedia(thread.post.embed)) {
+      if (isViewVideo(thread.post.embed.media)) {
+        thumbnailUrl = thread.post.embed.media.thumbnail;
+      }
+    }
+
+    if (isViewRecordWithMedia(thread.post.embed)) {
+      if (isViewRecord(thread.post.embed.record.record)) {
+        const quote = thread.post.embed.record.record;
+        if (isPostRecord(quote.value)) {
+          quotedPost = {
+            author: quote.author,
+            text: quote.value.text
+          };
+        }
+      }
     }
 
     return {
@@ -78,7 +95,8 @@ export function getPostVideo(thread: ThreadViewPost): BskyeVideo | undefined {
         thumbnailUrl: thumbnailUrl,
         aspectRatio: aspectRatio,
         mimeType: video.video.mimeType
-      }
+      },
+      quotedPost: quotedPost
     };
   }
 
@@ -110,7 +128,13 @@ export function getPostVideo(thread: ThreadViewPost): BskyeVideo | undefined {
           thumbnailUrl: video.thumbnail,
           aspectRatio: aspectRatio,
           mimeType: mimeType
-        }
+        },
+        quotedPost: isPostRecord(quotedRecord.value)
+          ? {
+              text: quotedRecord.value.text,
+              author: quotedRecord.author
+            }
+          : undefined
       };
     }
   }
@@ -214,4 +238,55 @@ function mapImages(images: ViewImage) {
       alt: img.alt
     };
   });
+}
+
+export function getQuotingString(author: ProfileViewBasic, text: string) {
+  return `\n\n🗨️Quoting: ${getUserDisplayString(author.displayName, author.handle)}\n${escapeHtml(text)}`;
+}
+
+export function getPostGif(thread: ThreadViewPost): BskyeGif | undefined {
+  if (isExternalView(thread.post.embed)) {
+    const external = thread.post.embed.external;
+    const imageUrl = external.uri;
+
+    let mimeType = 'image/jpeg';
+    const atIndex = imageUrl.lastIndexOf('@');
+    if (atIndex !== -1) {
+      mimeType = `image/${imageUrl.slice(atIndex + 1)}`;
+    }
+
+    return {
+      author: thread.post.author,
+      url: imageUrl,
+      mimeType: mimeType,
+      aspectRatio: undefined,
+      title: external.title
+    };
+  }
+
+  if (isViewRecordWithMedia(thread.post.embed) && isExternalView(thread.post.embed.media)) {
+    const media = thread.post.embed.media;
+    const external = media.external;
+    const imageUrl = external.uri;
+
+    let quotedPost: QuotedPost | undefined;
+    if (isViewRecord(thread.post.embed.record.record)) {
+      const quoteRecord = thread.post.embed.record.record;
+      if (isPostRecord(quoteRecord.value)) {
+        quotedPost = {
+          author: quoteRecord.author,
+          text: quoteRecord.value.text
+        };
+      }
+    }
+
+    return {
+      author: thread.post.author,
+      url: imageUrl,
+      mimeType: 'image/jpeg',
+      aspectRatio: undefined,
+      title: external.title,
+      quotedPost: quotedPost
+    };
+  }
 }

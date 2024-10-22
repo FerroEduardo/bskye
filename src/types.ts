@@ -35,6 +35,18 @@ export interface BskyeImage {
   quotedPost?: QuotedPost;
 }
 
+export interface BskyeGif {
+  author: ProfileViewBasic;
+  url: string;
+  mimeType: string | undefined;
+  aspectRatio?: {
+    width: number;
+    height: number;
+  };
+  title: string;
+  quotedPost?: QuotedPost;
+}
+
 export interface QuotedPost {
   author: ProfileViewBasic;
   text: string;

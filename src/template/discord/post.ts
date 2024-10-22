@@ -1,7 +1,15 @@
-import { isView as isExternalView } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { isRecord } from '@atproto/api/dist/client/types/app/bsky/feed/post';
-import { escapeHtml, generateOembedUrl, getPostImages, getPostVideo, getUserDisplayString, metricsFormatter } from '../../util';
+import {
+  escapeHtml,
+  generateOembedUrl,
+  getPostGif,
+  getPostImages,
+  getPostVideo,
+  getQuotingString,
+  getUserDisplayString,
+  metricsFormatter
+} from '../../util';
 
 function getMetaTags(host: string, userHandler: string, postId: string, thread: ThreadViewPost): string[] {
   if (!isRecord(thread.post.record)) {
@@ -9,8 +17,8 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
   }
   const author = thread.post.author;
   const postUrl = `https://bsky.app/profile/${userHandler}/post/${postId}`;
-  const description = escapeHtml(thread.post.record.text ?? '');
-  const oembedDescription = description.slice(0, 250);
+  let description = escapeHtml(thread.post.record.text ?? '');
+  let oembedDescription = description.slice(0, 250);
   const { likeCount, replyCount, repostCount } = thread.post;
 
   const userDisplayString = escapeHtml(getUserDisplayString(author.displayName, author.handle));
@@ -32,8 +40,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
     `<meta name="twitter:title" content="${userDisplayString}" />`,
     `<meta property="og:site_name" content="bskye" />`,
     `<meta property="og:url" content="${postUrl}" />`,
-    `<meta http-equiv="refresh" content="0; url = ${postUrl}" />`,
-    `<meta property="og:description" content="${description}" />`
+    `<meta http-equiv="refresh" content="0; url = ${postUrl}" />`
   ];
 
   // TODO: if post text is empty, try to use the text from quote (if present)
@@ -42,7 +49,13 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
   if (video) {
     const videoUrl = video.video.url;
     const mimeType = video.video.mimeType ?? 'video/mp4';
-    const oembedJsonUrl = generateOembedUrl(host, postUrl, userDisplayString, oembedDescription, title);
+
+    if (video.quotedPost && video.quotedPost.text.length > 0) {
+      const quotedPost = video.quotedPost;
+      oembedDescription += getQuotingString(quotedPost.author, escapeHtml(quotedPost.text));
+    }
+
+    const oembedJsonUrl = generateOembedUrl(host, postUrl, userDisplayString, oembedDescription.slice(0, 250), title);
 
     metaTags.push(
       `<meta name="twitter:card" content="player" />`,
@@ -65,6 +78,13 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
 
   const images = getPostImages(thread);
   if (images) {
+    if (images.quotedPost && images.quotedPost.text.length > 0) {
+      const quotedPost = images.quotedPost;
+      description += getQuotingString(quotedPost.author, escapeHtml(quotedPost.text));
+    }
+
+    metaTags.push(`<meta property="og:description" content="${description}" />`);
+
     for (const image of images.images) {
       const imageUrl = image.url;
       let mimeType = 'image/jpeg';
@@ -89,22 +109,28 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
   }
 
   // GIF
-  if (isExternalView(thread.post.embed)) {
-    const external = thread.post.embed.external;
-    const imageUrl = external.uri;
+  const gif = getPostGif(thread);
+  if (gif) {
+    if (gif.quotedPost && gif.quotedPost.text.length > 0) {
+      const quotedPost = gif.quotedPost;
+      description += getQuotingString(quotedPost.author, escapeHtml(quotedPost.text));
+    }
 
     metaTags.push(
+      `<meta property="og:description" content="${description}" />`,
       `<meta name="twitter:card" content="summary_large_image" />`,
-      `<meta property="twitter:image" content="${imageUrl}" />`,
-      `<meta property="og:image" content="${imageUrl}" />`,
-      `<meta property="og:image:secure_url" content="${imageUrl}" />`,
+      `<meta property="twitter:image" content="${gif.url}" />`,
+      `<meta property="og:image" content="${gif.url}" />`,
+      `<meta property="og:image:secure_url" content="${gif.url}" />`,
       `<meta property="og:image:type" content="image/jpeg" />`,
       `<meta property="og:image:width" content="0" />`,
       `<meta property="og:image:height" content="0" />`,
-      `<meta property="og:image:alt" content="${escapeHtml(external.title)}" />`
+      `<meta property="og:image:alt" content="${escapeHtml(gif.title)}" />`
     );
     return metaTags;
   }
+
+  metaTags.push(`<meta property="og:description" content="${description}" />`);
 
   return metaTags;
 }

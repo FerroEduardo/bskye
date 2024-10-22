@@ -1,8 +1,7 @@
-import { isView as isExternalView } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { isMain as isRecordWithMedia } from '@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { isRecord } from '@atproto/api/dist/client/types/app/bsky/feed/post';
-import { escapeHtml, getPostImages, getPostVideo, getUserDisplayString } from '../../util';
+import { escapeHtml, getPostGif, getPostImages, getPostVideo, getQuotingString, getUserDisplayString } from '../../util';
 
 function getMetaTags(host: string, userHandler: string, postId: string, thread: ThreadViewPost): string[] {
   if (!isRecord(thread.post.record)) {
@@ -11,7 +10,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
   const author = thread.post.author;
   const postUrl = `https://bsky.app/profile/${userHandler}/post/${postId}`;
 
-  const description = thread.post.record.text ? escapeHtml(thread.post.record.text) : '';
+  let description = thread.post.record.text ? escapeHtml(thread.post.record.text) : '';
   const title = escapeHtml(getUserDisplayString(author.displayName, author.handle));
 
   const metaTags = [
@@ -20,7 +19,6 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
     `<meta property="og:site_name" content="bskye" />`,
     `<meta property="og:title" content="${title}" />`,
     `<meta property="description" content="${description}" />`,
-    `<meta property="og:description" content="${description}" />`,
     `<meta property="og:url" content="${postUrl}" />`,
     `<meta http-equiv="refresh" content="0; url = ${postUrl}" />`,
     `<meta name="twitter:card" content="summary_large_image">`
@@ -33,7 +31,13 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
     const videoUrl = video.video.url;
     const mimeType = video.video.mimeType ?? 'video/mp4';
 
+    if (video.quotedPost && video.quotedPost.text.length > 0) {
+      const quotedPost = video.quotedPost;
+      description += getQuotingString(quotedPost.author, escapeHtml(quotedPost.text));
+    }
+
     metaTags.push(
+      `<meta property="og:description" content="${description}" />`,
       `<meta property="og:video" content="${videoUrl}" />`,
       `<meta property="og:video:secure_url" content="${videoUrl}" />`,
       `<meta property="og:video:type" content="${mimeType}" />`,
@@ -50,6 +54,13 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
 
   const images = getPostImages(thread);
   if (images) {
+    if (images.quotedPost && images.quotedPost.text.length > 0) {
+      const quotedPost = images.quotedPost;
+      description += getQuotingString(quotedPost.author, escapeHtml(quotedPost.text));
+    }
+
+    metaTags.push(`<meta property="og:description" content="${description}" />`);
+
     for (const image of images.images) {
       const imageUrl = image.url;
       let mimeType = 'image/jpeg';
@@ -72,29 +83,20 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
   }
 
   // GIF
-  if (isExternalView(thread.post.embed)) {
-    const external = thread.post.embed.external;
-    const imageUrl = external.thumb;
-
-    if (imageUrl) {
-      let mimeType = 'image/jpeg';
-
-      const atIndex = imageUrl.lastIndexOf('@');
-      if (atIndex !== -1) {
-        mimeType = `image/${imageUrl.slice(atIndex + 1)}`;
-      }
-
-      metaTags.push(
-        `<meta property="og:image" content="${imageUrl}" />`,
-        `<meta property="og:image:secure_url" content="${imageUrl}" />`,
-        `<meta property="og:image:type" content="${mimeType}" />`,
-        `<meta property="og:image:width" content="600" />`,
-        `<meta property="og:image:height" content="600" />`,
-        `<meta property="og:image:alt" content="${escapeHtml(external.title)}" />`
-      );
-      return metaTags;
-    }
+  const gif = getPostGif(thread);
+  if (gif) {
+    metaTags.push(
+      `<meta property="og:image" content="${gif.url}" />`,
+      `<meta property="og:image:secure_url" content="${gif.url}" />`,
+      `<meta property="og:image:type" content="${gif.mimeType}" />`,
+      `<meta property="og:image:width" content="600" />`,
+      `<meta property="og:image:height" content="600" />`,
+      `<meta property="og:image:alt" content="${escapeHtml(gif.title)}" />`
+    );
+    return metaTags;
   }
+
+  metaTags.push(`<meta property="og:description" content="${description}" />`);
 
   return metaTags;
 }
