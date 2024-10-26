@@ -1,3 +1,4 @@
+import { isView, isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { isRecord } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import {
@@ -130,6 +131,12 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
     return metaTags;
   }
 
+  if (isView(thread.post.embed) && isViewRecord(thread.post.embed.record)) {
+    const quotedPost = thread.post.embed.record;
+    if (isRecord(quotedPost.value)) {
+      description += getQuotingString(quotedPost.author, escapeHtml(quotedPost.value.text));
+    }
+  }
   metaTags.push(`<meta property="og:description" content="${description}" />`);
 
   return metaTags;
