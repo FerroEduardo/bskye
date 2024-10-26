@@ -1,14 +1,11 @@
-<div align="center">
-
 # bskye
 
-**Embed Bluesky videos, GIFs and images on Discord, WhatsApp and Telegram.**
+**Embed Bluesky videos, GIFs and images on Discord.**
 
 Written in TypeScript as a [Cloudflare Worker](https://workers.cloudflare.com/).
 
 [![Production](https://github.com/FerroEduardo/bskye/actions/workflows/deploy-production.yaml/badge.svg)](https://github.com/FerroEduardo/bskye/actions/workflows/deploy-production.yaml)
 [![Test](https://github.com/FerroEduardo/bskye/actions/workflows/test.yaml/badge.svg)](https://github.com/FerroEduardo/bskye/actions/workflows/test.yaml)
-</div>
 
 ----
 
@@ -26,6 +23,10 @@ Written in TypeScript as a [Cloudflare Worker](https://workers.cloudflare.com/).
 
 ![Single Image Embed Example](/.docs/embed-example/single-image.png)
 ![Multiple Images Embed Example](/.docs/embed-example/multiple-images.png)
+
+## Embed Quotes
+
+![Profile Embed Example](/.docs/embed-example/quote.png)
 
 ## Embed Profiles
 
