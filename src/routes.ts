@@ -1,7 +1,7 @@
 import { Context } from 'hono';
 import { getPostThread, getProfile as getProfileData } from './bluesky';
 import { getPlatform } from './template';
-import { convertPostUrlToAtPostUri } from './util';
+import { convertPostUrlToAtPostUri, unescapeHtml } from './util';
 
 export async function getPost(c: Context) {
   const { postId, userHandler } = c.req.param();
@@ -62,11 +62,11 @@ export async function oembed(c: Context) {
   }
 
   return c.json({
-    author_name: author ? decodeURIComponent(author) : '',
-    author_url: decodeURIComponent(link),
-    provider_name: `bskye${provider ? ' - ' + decodeURIComponent(provider) : ''}`,
-    provider_url: decodeURIComponent(link),
-    title: `bskye${title ? ' - ' + decodeURIComponent(title) : ''}`,
+    author_name: author ? unescapeHtml(decodeURIComponent(author)) : '',
+    author_url: unescapeHtml(decodeURIComponent(link)),
+    provider_name: `bskye${provider ? ' - ' + unescapeHtml(decodeURIComponent(provider)) : ''}`,
+    provider_url: unescapeHtml(decodeURIComponent(link)),
+    title: `bskye${title ? ' - ' + unescapeHtml(decodeURIComponent(title)) : ''}`,
     type: 'link',
     version: '1.0'
   });

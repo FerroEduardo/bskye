@@ -31,6 +31,10 @@ export function escapeHtml(text: string) {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+export function unescapeHtml(text: string) {
+  return text.replace(/&#34;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+}
+
 export function getUserDisplayString(displayName: string | undefined, handle: string): string {
   if (displayName) {
     return `${displayName} (@${handle})`;
