@@ -9,6 +9,7 @@ import {
 import { isMain as isMainVideo, isView as isViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { isRecord as isPostRecord } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+import { toUSVString } from 'node:util';
 import { BskyeGif, BskyeImage, BskyeVideo, QuotedPost } from './types';
 
 export function convertPostUrlToAtPostUri(userHandler: string, postId: string): string {
@@ -17,10 +18,10 @@ export function convertPostUrlToAtPostUri(userHandler: string, postId: string): 
 
 export function generateOembedUrl(host: string, link: string, title: string, author: string, provider: string): string {
   const params = new URLSearchParams({
-    author: encodeURIComponent(author),
-    link: encodeURIComponent(link),
-    title: encodeURIComponent(title),
-    provider: encodeURIComponent(provider)
+    author: encodeURIComponent(toUSVString(author)),
+    link: encodeURIComponent(toUSVString(link)),
+    title: encodeURIComponent(toUSVString(title)),
+    provider: encodeURIComponent(toUSVString(provider))
   });
   return `${host}/oembed?${params}`;
 }
