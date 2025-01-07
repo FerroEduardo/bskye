@@ -28,6 +28,20 @@ Written in TypeScript as a [Cloudflare Worker](https://workers.cloudflare.com/).
 
 ![Profile Embed Example](/.docs/embed-example/quote.png)
 
+## Direct media links
+
+To access media directly, simply prepend `d.` to the domain (`d.bskye.app`):
+
+![Direct media links](/.docs/embed-example/direct-video.png)
+
+### Gallery
+
+Additionally, you can target specific media items within a post by appending an index number (starting from 1) to the URL:
+
+> `https://d.bskye.app/profile/pfrazee.com/post/3lech75aa7k2f/4`
+
+![Direct media links](/.docs/embed-example/gallery.png)
+
 ## Embed Profiles
 
 ![Profile Embed Example](/.docs/embed-example/profile.png)
