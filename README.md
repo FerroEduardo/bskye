@@ -34,6 +34,9 @@ To access media directly, simply prepend `d.` to the domain (`d.bskye.app`):
 
 ![Direct media links](/.docs/embed-example/direct-video.png)
 
+> [!NOTE]  
+> GIF animations are not properly supported due to Discord's limitations. When accessed directly, GIFs will display as static images rather than animated content.
+
 ### Gallery
 
 Additionally, you can target specific media items within a post by appending an index number (starting from 1) to the URL:
