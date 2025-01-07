@@ -8,7 +8,7 @@ import {
 } from '@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia';
 import { isMain as isMainVideo, isView as isViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { isRecord as isPostRecord } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+import { isRecord as isPostRecord, isRecord } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { toUSVString } from 'node:util';
 import { BskyeGif, BskyeImage, BskyeVideo, QuotedPost } from './types';
 
@@ -294,4 +294,44 @@ export function getPostGif(thread: ThreadViewPost): BskyeGif | undefined {
       quotedPost: quotedPost
     };
   }
+}
+
+/**
+ * @param mediaIndex index starting from 1
+ */
+export function getDirectMediaLink(thread: ThreadViewPost, mediaIndex: number): string | undefined {
+  if (!isRecord(thread.post.record)) {
+    throw new Error('Post record not found');
+  }
+
+  mediaIndex = mediaIndex - 1;
+
+  const video = getPostVideo(thread);
+  if (video) {
+    const videoUrl = video.video.url;
+
+    return videoUrl;
+  }
+
+  const images = getPostImages(thread);
+  if (images) {
+    let image;
+    if (images.images[mediaIndex]) {
+      image = images.images[mediaIndex];
+    } else if (mediaIndex >= images.images.length) {
+      image = images.images[images.images.length - 1];
+    } else {
+      image = images.images[0];
+    }
+    const imageUrl = image.url;
+
+    return imageUrl;
+  }
+
+  const gif = getPostGif(thread);
+  if (gif) {
+    return gif.url;
+  }
+
+  return undefined;
 }

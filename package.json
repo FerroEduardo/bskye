@@ -4,8 +4,8 @@
   "license": "MIT",
   "description": "Embed Bluesky videos, GIFs and images on Discord",
   "scripts": {
-    "deploy:production": "wrangler deploy --name=bskye --route bskye.app",
-    "deploy:staging": "wrangler deploy --name=staging-bskye --route staging.bskye.app",
+    "deploy:production": "wrangler deploy --name=bskye --route bskye.app --route d.bskye.app",
+    "deploy:staging": "wrangler deploy --name=staging-bskye --route staging.bskye.app --route d-staging.bskye.app",
     "dev": "wrangler dev",
     "test": "vitest run",
     "test:watch": "vitest watch",

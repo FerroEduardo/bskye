@@ -10,9 +10,19 @@ const app = new Hono();
 const setupPlatform = createMiddleware(async (c, next) => {
   const platform = getPlatformName(c.req.header('user-agent'));
   if (platform) {
-    c.res.headers.set('platform-Name', platform);
+    c.res.headers.set('platform-name', platform);
   }
   c.set('platform-name', platform);
+  await next();
+});
+
+const setupDirectMedia = createMiddleware(async (c, next) => {
+  const host = c.req.header('Host');
+  if (host && (host.startsWith('d.') || host.startsWith('d-'))) {
+    c.set('is-direct-media', true);
+    c.res.headers.set('is-direct-media', 'true');
+  }
+
   await next();
 });
 
@@ -28,6 +38,7 @@ app.use(trimTrailingSlash());
 app.get(
   '*',
   setupPlatform,
+  setupDirectMedia,
   cache({
     cacheName: 'bskye',
     cacheControl: 'max-age=3600',
@@ -62,7 +73,7 @@ app.get('/', (c) => {
   return c.redirect('https://github.com/FerroEduardo/bskye');
 });
 
-app.get('/profile/:userHandler/post/:postId', redirectToBlueskyIfNotFromAnyPlatform, getPost);
+app.get('/profile/:userHandler/post/:postId/:mediaIndex{[0-9]+}?', redirectToBlueskyIfNotFromAnyPlatform, getPost);
 app.get('/profile/:userHandler', redirectToBlueskyIfNotFromAnyPlatform, getProfile);
 app.get('/oembed', oembed);
 

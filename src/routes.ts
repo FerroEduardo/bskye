@@ -1,10 +1,10 @@
 import { Context } from 'hono';
 import { getPostThread, getProfile as getProfileData } from './bluesky';
 import { getPlatform } from './template';
-import { convertPostUrlToAtPostUri, unescapeHtml } from './util';
+import { convertPostUrlToAtPostUri, getDirectMediaLink, unescapeHtml } from './util';
 
 export async function getPost(c: Context) {
-  const { postId, userHandler } = c.req.param();
+  const { postId, userHandler, mediaIndex } = c.req.param();
   const postAtUri = convertPostUrlToAtPostUri(userHandler, postId.match('[^|]+')?.[0] ?? postId);
 
   let postThread;
@@ -22,6 +22,15 @@ export async function getPost(c: Context) {
     );
 
     return c.json({ message: 'Failed to get post from Bluesky API' }, { status: 400 });
+  }
+
+  if (c.get('is-direct-media') === true) {
+    const index = Number.parseInt(mediaIndex);
+    const mediaLink = getDirectMediaLink(postThread, index);
+
+    if (mediaLink) {
+      return c.redirect(mediaLink);
+    }
   }
 
   const url = new URL(c.req.url);
