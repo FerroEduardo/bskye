@@ -1,9 +1,10 @@
-import { Hono } from 'hono';
+import { Context, Hono } from 'hono';
 import { cache } from 'hono/cache';
 import { createMiddleware } from 'hono/factory';
 import { trimTrailingSlash } from 'hono/trailing-slash';
 import { getPost, getProfile, oembed } from './routes';
 import { getPlatformName } from './template';
+import { buildPostPathFromParameters } from './util';
 
 const app = new Hono();
 
@@ -26,9 +27,9 @@ const setupDirectMedia = createMiddleware(async (c, next) => {
   await next();
 });
 
-const redirectToBlueskyIfNotFromAnyPlatform = createMiddleware(async (c, next) => {
+const redirectToBlueskyIfNotFromAnyPlatform = createMiddleware(async (c: Context, next) => {
   if (!c.get('platform-name')) {
-    return c.redirect('https://bsky.app' + c.req.path);
+    return c.redirect('https://bsky.app' + buildPostPathFromParameters(c.req.param() as { userHandler: string; postId?: string }));
   }
   await next();
 });
