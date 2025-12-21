@@ -335,3 +335,10 @@ export function getDirectMediaLink(thread: ThreadViewPost, mediaIndex: number): 
 
   return undefined;
 }
+
+export function buildPostPathFromParameters({ userHandler, postId }: { userHandler: string; postId?: string }): string {
+  if (postId) {
+    return `/profile/${userHandler}/post/${postId}`;
+  }
+  return `/profile/${userHandler}`;
+}
