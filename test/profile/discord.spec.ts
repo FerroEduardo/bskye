@@ -195,7 +195,7 @@ export const validateProfile = (html: cheerio.CheerioAPI, hasAvatar: boolean = f
   if (hasAvatar) {
     values.push(
       {
-        attributeName: 'property',
+        attributeName: 'name',
         attributeValue: 'twitter:card',
         content: 'summary_large_image'
       },
