@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        {
+            "name": "Wrangler Dev",
+            "type": "node",
+            "request": "attach",
+            "preLaunchTask": "Wrangler Dev",
+            "cwd": "${workspaceFolder}",
+            "resolveSourceMapLocations": [
+                "**",
+                "!**/node_modules/**"
+            ]
+        }
+    ]
+}
