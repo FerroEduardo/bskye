@@ -24,6 +24,8 @@ const mockProfileWithAvatar: ProfileViewDetailed = {
   avatar: 'https://example.com/avatar.jpg'
 };
 
+const userAgent = 'WhatsApp/2.23.20.0';
+
 describe('Profile Route - WhatsApp', () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -60,7 +62,7 @@ describe('Profile Route - WhatsApp', () => {
       {
         method: 'GET',
         headers: {
-          'User-Agent': 'WhatsApp/2.23.20.0'
+          'User-Agent': userAgent
         }
       },
       env,
@@ -82,7 +84,7 @@ describe('Profile Route - WhatsApp', () => {
       {
         method: 'GET',
         headers: {
-          'User-Agent': 'WhatsApp/2.23.20.0'
+          'User-Agent': userAgent
         }
       },
       env,
@@ -109,7 +111,7 @@ describe('Profile Route - WhatsApp', () => {
       {
         method: 'GET',
         headers: {
-          'User-Agent': 'WhatsApp/2.23.20.0'
+          'User-Agent': userAgent
         }
       },
       env,
@@ -163,7 +165,7 @@ describe('Profile Route - WhatsApp', () => {
       {
         method: 'GET',
         headers: {
-          'User-Agent': 'WhatsApp/2.23.20.0'
+          'User-Agent': userAgent
         }
       },
       env,
