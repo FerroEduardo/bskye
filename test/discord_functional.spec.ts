@@ -338,7 +338,7 @@ describe('Discord Functional Tests (Real API)', () => {
     expect($('meta[property="og:site_name"]').attr('content')).toBe('bskye');
     expect($('meta[property="og:url"]').attr('content')).toBe('https://bsky.app/profile/danabra.mov/post/3matfymosas2e');
     expect($('meta[http-equiv="refresh"]').attr('content')).toBe('0; url = https://bsky.app/profile/danabra.mov/post/3matfymosas2e');
-    expect($('meta[property="og:description"]').attr('content')).toContain('Quoting:');
+    expect($('meta[property="og:description"]').attr('content')).toContain('🗨️Quoting:');
     expect($('meta[name="twitter:card"]').attr('content')).toBe('summary_large_image');
     expect($('meta[property="twitter:image"]').attr('content')).toBeDefined();
     expect($('meta[property="og:image"]').attr('content')).toBeDefined();
@@ -350,7 +350,7 @@ describe('Discord Functional Tests (Real API)', () => {
 
     const oembedElement = $('link[type="application/json+oembed"]');
     const oembed = await validateOembed(oembedElement);
-    expect(oembed.author_name).toContain('🗨️Quoting');
+    expect(oembed.author_name).toBe('');
   });
 
   it('should handle text with video quote', async () => {

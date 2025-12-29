@@ -211,6 +211,14 @@ export function getPostImages(thread: ThreadViewPost): BskyeImage | undefined {
         images: mapImages(image),
         quotedPost: quotedPost
       };
+    } else if (quotedEmbeds && quotedEmbeds.length > 0 && isViewRecordWithMedia(quotedEmbeds[0]) && isViewImage(quotedEmbeds[0].media)) {
+      const image = quotedEmbeds[0].media;
+
+      return {
+        author: quotedAuthor,
+        images: mapImages(image),
+        quotedPost: quotedPost
+      };
     }
   }
 
