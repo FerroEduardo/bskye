@@ -1,16 +1,15 @@
-import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
-import { isView as isExternalView } from '@atproto/api/dist/client/types/app/bsky/embed/external';
-import { isView as isViewImage, View as ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
-import { isView as isRecordView, isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
-import {
-  isMain as isRecordWithMedia,
-  isView as isViewRecordWithMedia
-} from '@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia';
-import { isMain as isMainVideo, isView as isViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
-import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { isRecord as isPostRecord, isRecord } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { toUSVString } from 'node:util';
 import { BskyeGif, BskyeImage, BskyeVideo, QuotedPost } from './types';
+import {
+  AppBskyFeedPost,
+  AppBskyFeedDefs,
+  AppBskyEmbedVideo,
+  AppBskyEmbedRecordWithMedia,
+  AppBskyEmbedRecord,
+  AppBskyEmbedImages,
+  AppBskyEmbedExternal,
+  AppBskyActorDefs
+} from '@atproto/api';
 
 export function convertPostUrlToAtPostUri(userHandler: string, postId: string): string {
   return `at://${userHandler}/app.bsky.feed.post/${postId}`;
@@ -44,17 +43,17 @@ export function getUserDisplayString(displayName: string | undefined, handle: st
   return `@${handle}`;
 }
 
-export function getPostVideo(thread: ThreadViewPost): BskyeVideo | undefined {
+export function getPostVideo(thread: AppBskyFeedDefs.ThreadViewPost): BskyeVideo | undefined {
   const threadAuthor = thread.post.author;
   const record = thread.post.record;
-  if (!isPostRecord(record)) {
+  if (!AppBskyFeedPost.isRecord(record)) {
     return undefined;
   }
 
   // Video without quoted post
-  if (isMainVideo(record.embed)) {
+  if (AppBskyEmbedVideo.isMain(record.embed)) {
     const video = record.embed;
-    const thumbnailUrl = isViewVideo(thread.post.embed) ? thread.post.embed.thumbnail : undefined;
+    const thumbnailUrl = AppBskyEmbedVideo.isView(thread.post.embed) ? thread.post.embed.thumbnail : undefined;
     const aspectRatio = getAspectRatio(video.aspectRatio);
 
     return {
@@ -69,22 +68,22 @@ export function getPostVideo(thread: ThreadViewPost): BskyeVideo | undefined {
   }
 
   // Video with quoted post
-  if (isRecordWithMedia(record.embed) && isMainVideo(record.embed.media)) {
+  if (AppBskyEmbedRecordWithMedia.isMain(record.embed) && AppBskyEmbedVideo.isMain(record.embed.media)) {
     const video = record.embed.media;
     const aspectRatio = getAspectRatio(video.aspectRatio);
 
     let thumbnailUrl: string | undefined;
     let quotedPost: QuotedPost | undefined;
-    if (isRecordWithMedia(thread.post.embed)) {
-      if (isViewVideo(thread.post.embed.media)) {
+    if (AppBskyEmbedRecordWithMedia.isMain(thread.post.embed)) {
+      if (AppBskyEmbedVideo.isView(thread.post.embed.media)) {
         thumbnailUrl = thread.post.embed.media.thumbnail;
       }
     }
 
-    if (isViewRecordWithMedia(thread.post.embed)) {
-      if (isViewRecord(thread.post.embed.record.record)) {
+    if (AppBskyEmbedRecordWithMedia.isView(thread.post.embed)) {
+      if (AppBskyEmbedRecord.isViewRecord(thread.post.embed.record.record)) {
         const quote = thread.post.embed.record.record;
-        if (isPostRecord(quote.value)) {
+        if (AppBskyFeedPost.isRecord(quote.value)) {
           quotedPost = {
             author: quote.author,
             text: quote.value.text
@@ -106,21 +105,21 @@ export function getPostVideo(thread: ThreadViewPost): BskyeVideo | undefined {
   }
 
   // Post with no media and quoted post has video
-  if (isRecordView(thread.post.embed) && isViewRecord(thread.post.embed.record)) {
+  if (AppBskyEmbedRecord.isView(thread.post.embed) && AppBskyEmbedRecord.isViewRecord(thread.post.embed.record)) {
     const quotedRecord = thread.post.embed.record;
     const quotedVideoAuthor = quotedRecord.author;
     const quotedEmbeds = quotedRecord.embeds;
 
-    if (quotedEmbeds && quotedEmbeds.length > 0 && isViewVideo(quotedEmbeds[0])) {
+    if (quotedEmbeds && quotedEmbeds.length > 0 && AppBskyEmbedVideo.isView(quotedEmbeds[0])) {
       // TODO: add warn if has more than 1 embed
       const video = quotedEmbeds[0];
 
       const aspectRatio = getAspectRatio(video.aspectRatio);
 
       let mimeType: string | undefined;
-      if (isPostRecord(quotedRecord.value)) {
+      if (AppBskyFeedPost.isRecord(quotedRecord.value)) {
         const post = quotedRecord.value;
-        if (isMainVideo(post.embed)) {
+        if (AppBskyEmbedVideo.isMain(post.embed)) {
           const video = post.embed;
           mimeType = video.video.mimeType;
         }
@@ -134,7 +133,7 @@ export function getPostVideo(thread: ThreadViewPost): BskyeVideo | undefined {
           aspectRatio: aspectRatio,
           mimeType: mimeType
         },
-        quotedPost: isPostRecord(quotedRecord.value)
+        quotedPost: AppBskyFeedPost.isRecord(quotedRecord.value)
           ? {
               text: quotedRecord.value.text,
               author: quotedRecord.author
@@ -147,16 +146,16 @@ export function getPostVideo(thread: ThreadViewPost): BskyeVideo | undefined {
   return undefined;
 }
 
-export function getPostImages(thread: ThreadViewPost): BskyeImage | undefined {
+export function getPostImages(thread: AppBskyFeedDefs.ThreadViewPost): BskyeImage | undefined {
   const threadAuthor = thread.post.author;
 
   // Image without quoted post
-  if (isViewImage(thread.post.embed)) {
+  if (AppBskyEmbedImages.isView(thread.post.embed)) {
     const image = thread.post.embed;
 
     const record = thread.post.record;
     const quotedPost: QuotedPost | undefined =
-      isPostRecord(record) && isViewRecord(record.record) && isPostRecord(record.record.value)
+      AppBskyFeedPost.isRecord(record) && AppBskyEmbedRecord.isViewRecord(record.record) && AppBskyFeedPost.isRecord(record.record.value)
         ? {
             author: record.record.author,
             text: record.record.value.text
@@ -171,12 +170,12 @@ export function getPostImages(thread: ThreadViewPost): BskyeImage | undefined {
   }
 
   // Image with quoted post
-  if (isViewRecordWithMedia(thread.post.embed) && isViewImage(thread.post.embed.media)) {
+  if (AppBskyEmbedRecordWithMedia.isView(thread.post.embed) && AppBskyEmbedImages.isView(thread.post.embed.media)) {
     const quotedRecord = thread.post.embed;
     const image = thread.post.embed.media;
 
     const quotedPost: QuotedPost | undefined =
-      isViewRecord(quotedRecord.record.record) && isPostRecord(quotedRecord.record.record.value)
+      AppBskyEmbedRecord.isViewRecord(quotedRecord.record.record) && AppBskyFeedPost.isRecord(quotedRecord.record.record.value)
         ? {
             author: quotedRecord.record.record.author,
             text: quotedRecord.record.record.value.text
@@ -191,18 +190,18 @@ export function getPostImages(thread: ThreadViewPost): BskyeImage | undefined {
   }
 
   // Post with no media and quoted post has image
-  if (isRecordView(thread.post.embed) && isViewRecord(thread.post.embed.record)) {
+  if (AppBskyEmbedRecord.isView(thread.post.embed) && AppBskyEmbedRecord.isViewRecord(thread.post.embed.record)) {
     const quotedRecord = thread.post.embed.record;
     const quotedAuthor = quotedRecord.author;
     const quotedEmbeds = quotedRecord.embeds;
-    const quotedPost: QuotedPost | undefined = isPostRecord(quotedRecord.value)
+    const quotedPost: QuotedPost | undefined = AppBskyFeedPost.isRecord(quotedRecord.value)
       ? {
           author: quotedRecord.author,
           text: quotedRecord.value.text
         }
       : undefined;
 
-    if (quotedEmbeds && quotedEmbeds.length > 0 && isViewImage(quotedEmbeds[0])) {
+    if (quotedEmbeds && quotedEmbeds.length > 0 && AppBskyEmbedImages.isView(quotedEmbeds[0])) {
       // TODO: add warn if has more than 1 embed
       const image = quotedEmbeds[0];
 
@@ -211,7 +210,12 @@ export function getPostImages(thread: ThreadViewPost): BskyeImage | undefined {
         images: mapImages(image),
         quotedPost: quotedPost
       };
-    } else if (quotedEmbeds && quotedEmbeds.length > 0 && isViewRecordWithMedia(quotedEmbeds[0]) && isViewImage(quotedEmbeds[0].media)) {
+    } else if (
+      quotedEmbeds &&
+      quotedEmbeds.length > 0 &&
+      AppBskyEmbedRecordWithMedia.isView(quotedEmbeds[0]) &&
+      AppBskyEmbedImages.isView(quotedEmbeds[0].media)
+    ) {
       const image = quotedEmbeds[0].media;
 
       return {
@@ -234,7 +238,7 @@ function getAspectRatio(aspectRatio?: { width: number; height: number }) {
   return aspectRatio ? { width: aspectRatio.width, height: aspectRatio.height } : undefined;
 }
 
-function mapImages(images: ViewImage) {
+function mapImages(images: AppBskyEmbedImages.View) {
   return images.images.map((img) => {
     const imageUrl = img.fullsize;
     let mimeType = 'image/jpeg';
@@ -253,12 +257,12 @@ function mapImages(images: ViewImage) {
   });
 }
 
-export function getQuotingString(author: ProfileViewBasic, text: string) {
+export function getQuotingString(author: AppBskyActorDefs.ProfileViewBasic, text: string) {
   return `\n\n🗨️Quoting: ${getUserDisplayString(author.displayName, author.handle)}\n${escapeHtml(text)}`;
 }
 
-export function getPostGif(thread: ThreadViewPost): BskyeGif | undefined {
-  if (isExternalView(thread.post.embed)) {
+export function getPostGif(thread: AppBskyFeedDefs.ThreadViewPost): BskyeGif | undefined {
+  if (AppBskyEmbedExternal.isView(thread.post.embed)) {
     const external = thread.post.embed.external;
     const imageUrl = external.uri;
 
@@ -277,15 +281,15 @@ export function getPostGif(thread: ThreadViewPost): BskyeGif | undefined {
     };
   }
 
-  if (isViewRecordWithMedia(thread.post.embed) && isExternalView(thread.post.embed.media)) {
+  if (AppBskyEmbedRecordWithMedia.isView(thread.post.embed) && AppBskyEmbedExternal.isView(thread.post.embed.media)) {
     const media = thread.post.embed.media;
     const external = media.external;
     const imageUrl = external.uri;
 
     let quotedPost: QuotedPost | undefined;
-    if (isViewRecord(thread.post.embed.record.record)) {
+    if (AppBskyEmbedRecord.isViewRecord(thread.post.embed.record.record)) {
       const quoteRecord = thread.post.embed.record.record;
-      if (isPostRecord(quoteRecord.value)) {
+      if (AppBskyFeedPost.isRecord(quoteRecord.value)) {
         quotedPost = {
           author: quoteRecord.author,
           text: quoteRecord.value.text
@@ -307,8 +311,8 @@ export function getPostGif(thread: ThreadViewPost): BskyeGif | undefined {
 /**
  * @param mediaIndex index starting from 1
  */
-export function getDirectMediaLink(thread: ThreadViewPost, mediaIndex: number): string | undefined {
-  if (!isRecord(thread.post.record)) {
+export function getDirectMediaLink(thread: AppBskyFeedDefs.ThreadViewPost, mediaIndex: number): string | undefined {
+  if (!AppBskyFeedPost.isRecord(thread.post.record)) {
     throw new Error('Post record not found');
   }
 

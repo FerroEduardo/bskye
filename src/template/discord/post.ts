@@ -1,6 +1,3 @@
-import { isView, isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
-import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { isRecord } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import {
   escapeHtml,
   generateOembedUrl,
@@ -11,9 +8,10 @@ import {
   getUserDisplayString,
   metricsFormatter
 } from '../../util';
+import { AppBskyFeedPost, AppBskyFeedDefs, AppBskyEmbedRecord } from '@atproto/api';
 
-function getMetaTags(host: string, userHandler: string, postId: string, thread: ThreadViewPost): string[] {
-  if (!isRecord(thread.post.record)) {
+function getMetaTags(host: string, userHandler: string, postId: string, thread: AppBskyFeedDefs.ThreadViewPost): string[] {
+  if (!AppBskyFeedPost.isRecord(thread.post.record)) {
     throw new Error('Post record not found');
   }
   const author = thread.post.author;
@@ -131,9 +129,9 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
     return metaTags;
   }
 
-  if (isView(thread.post.embed) && isViewRecord(thread.post.embed.record)) {
+  if (AppBskyEmbedRecord.isView(thread.post.embed) && AppBskyEmbedRecord.isViewRecord(thread.post.embed.record)) {
     const quotedPost = thread.post.embed.record;
-    if (isRecord(quotedPost.value)) {
+    if (AppBskyFeedPost.isRecord(quotedPost.value)) {
       description += getQuotingString(quotedPost.author, escapeHtml(quotedPost.value.text));
     }
   }
@@ -142,7 +140,7 @@ function getMetaTags(host: string, userHandler: string, postId: string, thread: 
   return metaTags;
 }
 
-export function render(host: string, userHandler: string, postId: string, postThread: ThreadViewPost) {
+export function render(host: string, userHandler: string, postId: string, postThread: AppBskyFeedDefs.ThreadViewPost) {
   const postUrl = `https://bsky.app/profile/${userHandler}/post/${postId}`;
 
   return `<!DOCTYPE html>

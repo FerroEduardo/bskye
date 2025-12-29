@@ -1,14 +1,13 @@
 import { env, createExecutionContext, waitOnExecutionContext } from 'cloudflare:test';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import app from '../../src';
-import type { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import type { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { AppBskyActorDefs, AppBskyFeedDefs } from '@atproto/api';
 import * as bluesky from '../../src/bluesky';
 import * as cheerio from 'cheerio';
 
 vi.mock('../../src/bluesky');
 
-const mockAuthor: ProfileViewDetailed = {
+const mockAuthor: AppBskyActorDefs.ProfileViewDetailed = {
   did: 'did:plc:z72i4hdhw56rfsilqqqyqj2m',
   handle: 'example.bsky.social',
   displayName: 'Example User',
@@ -123,7 +122,7 @@ describe('Post Route - Discord', () => {
   });
 
   it('should render text-only post', async () => {
-    const mockThread: ThreadViewPost = {
+    const mockThread: AppBskyFeedDefs.ThreadViewPost = {
       post: {
         uri: 'at://example.bsky.social/app.bsky.feed.post/123',
         cid: 'mock-cid',
@@ -170,7 +169,7 @@ describe('Post Route - Discord', () => {
   });
 
   it('should render image post', async () => {
-    const mockThread: ThreadViewPost = {
+    const mockThread: AppBskyFeedDefs.ThreadViewPost = {
       post: {
         uri: 'at://example.bsky.social/app.bsky.feed.post/123',
         cid: 'mock-cid',
@@ -246,7 +245,7 @@ describe('Post Route - Discord', () => {
   });
 
   it('should render multiple image post', async () => {
-    const mockThread: ThreadViewPost = {
+    const mockThread: AppBskyFeedDefs.ThreadViewPost = {
       post: {
         uri: 'at://example.bsky.social/app.bsky.feed.post/123',
         cid: 'mock-cid',
@@ -335,7 +334,7 @@ describe('Post Route - Discord', () => {
   });
 
   it('should render video post', async () => {
-    const mockThread: ThreadViewPost = {
+    const mockThread: AppBskyFeedDefs.ThreadViewPost = {
       post: {
         uri: 'at://example.bsky.social/app.bsky.feed.post/123',
         cid: 'mock-cid',
@@ -400,7 +399,7 @@ describe('Post Route - Discord', () => {
   });
 
   it('should render GIF post', async () => {
-    const mockThread: ThreadViewPost = {
+    const mockThread: AppBskyFeedDefs.ThreadViewPost = {
       post: {
         uri: 'at://example.bsky.social/app.bsky.feed.post/123',
         cid: 'mock-cid',
@@ -470,7 +469,7 @@ describe('Post Route - Discord', () => {
   });
 
   it('should handle direct media access with mediaIndex', async () => {
-    const mockThread: ThreadViewPost = {
+    const mockThread: AppBskyFeedDefs.ThreadViewPost = {
       post: {
         uri: 'at://example.bsky.social/app.bsky.feed.post/123',
         cid: 'mock-cid',

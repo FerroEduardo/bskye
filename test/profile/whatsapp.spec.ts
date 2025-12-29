@@ -1,13 +1,13 @@
 import { createExecutionContext, env, waitOnExecutionContext } from 'cloudflare:test';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import app from '../../src';
-import type { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { AppBskyActorDefs } from '@atproto/api';
 import * as bluesky from '../../src/bluesky';
 import * as cheerio from 'cheerio';
 
 vi.mock('../../src/bluesky');
 
-const mockProfile: ProfileViewDetailed = {
+const mockProfile: AppBskyActorDefs.ProfileViewBasic = {
   did: 'did:plc:z72i4hdhw56rfsilqqqyqj2m',
   handle: 'example.bsky.social',
   displayName: 'Example User',
@@ -19,7 +19,7 @@ const mockProfile: ProfileViewDetailed = {
   createdAt: '2023-01-01T00:00:00.000Z'
 };
 
-const mockProfileWithAvatar: ProfileViewDetailed = {
+const mockProfileWithAvatar: AppBskyActorDefs.ProfileViewBasic = {
   ...mockProfile,
   avatar: 'https://example.com/avatar.jpg'
 };
