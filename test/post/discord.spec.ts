@@ -27,6 +27,7 @@ function validateMetaTags(
     title: string;
     description?: string;
     image?: string;
+    images?: string[];
     video?: string;
     card: string;
   }
@@ -57,6 +58,13 @@ function validateMetaTags(
   if (expected.image) {
     const actualImage = $('meta[property="og:image"]').attr('content');
     expect(actualImage).toBe(expected.image);
+  }
+
+  if (expected.images) {
+    $('meta[property="og:image"]').each((_, element) => {
+      const actualImage = $(element).attr('content');
+      expect(expected.images?.includes(actualImage!)).toBe(true);
+    });
   }
 
   if (expected.video) {
@@ -154,8 +162,6 @@ describe('Post Route - Discord', () => {
 
     const $ = cheerio.load(await res.text());
 
-    // Discord template doesn't add twitter:card for text-only posts (bug)
-    // Just check the title is present
     const title = $('meta[name="twitter:title"]').attr('content');
     expect(title).toBe('Example User (@example.bsky.social)');
 
@@ -228,6 +234,95 @@ describe('Post Route - Discord', () => {
       title: 'Example User (@example.bsky.social)',
       description: 'Check out this image',
       image: 'https://example.com/fullsize.jpg@jpeg',
+      card: 'summary_large_image'
+    });
+
+    // Check image-specific meta tags
+    const imageType = $('meta[property="og:image:type"]').attr('content');
+    expect(imageType).toBe('image/jpeg');
+
+    const imageAlt = $('meta[property="og:image:alt"]').attr('content');
+    expect(imageAlt).toBe('A beautiful sunset');
+  });
+
+  it('should render multiple image post', async () => {
+    const mockThread: ThreadViewPost = {
+      post: {
+        uri: 'at://example.bsky.social/app.bsky.feed.post/123',
+        cid: 'mock-cid',
+        author: mockAuthor,
+        record: {
+          $type: 'app.bsky.feed.post',
+          text: 'Check out this image',
+          embed: {
+            $type: 'app.bsky.embed.images',
+            images: [
+              {
+                alt: 'A beautiful sunset',
+                image: {
+                  ref: { $link: 'mock-image-cid' },
+                  mimeType: 'image/jpeg',
+                  size: 1024
+                }
+              },
+              {
+                alt: 'A beautiful night sky',
+                image: {
+                  ref: { $link: 'mock-image-cid' },
+                  mimeType: 'image/jpeg',
+                  size: 512
+                }
+              }
+            ]
+          },
+          createdAt: '2024-01-01T00:00:00.000Z'
+        },
+        embed: {
+          $type: 'app.bsky.embed.images#view',
+          images: [
+            {
+              thumb: 'https://example.com/thumb.jpg',
+              fullsize: 'https://example.com/fullsize.jpg@jpeg',
+              alt: 'A beautiful sunset'
+            },
+            {
+              thumb: 'https://example.com/thumb2.jpg',
+              fullsize: 'https://example.com/fullsize2.jpg@jpeg',
+              alt: 'A beautiful night sky'
+            }
+          ]
+        },
+        replyCount: 5,
+        repostCount: 3,
+        likeCount: 10,
+        indexedAt: '2024-01-01T00:00:00.000Z'
+      }
+    };
+
+    vi.mocked(bluesky.getPostThread).mockResolvedValue(mockThread);
+
+    const ctx = createExecutionContext();
+    const res = await app.request(
+      '/profile/example.bsky.social/post/123',
+      {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)'
+        }
+      },
+      env,
+      ctx
+    );
+    await waitOnExecutionContext(ctx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toContain('text/html');
+
+    const $ = cheerio.load(await res.text());
+    validateMetaTags($, {
+      title: 'Example User (@example.bsky.social)',
+      description: 'Check out this image',
+      images: ['https://example.com/fullsize.jpg@jpeg', 'https://example.com/fullsize2.jpg@jpeg'],
       card: 'summary_large_image'
     });
 
