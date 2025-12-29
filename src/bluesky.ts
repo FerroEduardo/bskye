@@ -1,7 +1,6 @@
-import { type ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
-import { isThreadViewPost, type ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppBskyFeedDefs, AppBskyActorDefs } from '@atproto/api';
 
-export async function getPostThread(postAtUri: string): Promise<ThreadViewPost> {
+export async function getPostThread(postAtUri: string): Promise<AppBskyFeedDefs.ThreadViewPost> {
   const url = `https://public.api.bsky.app/xrpc/app.bsky.feed.getPostThread?uri=${postAtUri}&depth=0&parentHeight`;
   const response = await fetch(url, {
     method: 'GET',
@@ -18,14 +17,14 @@ export async function getPostThread(postAtUri: string): Promise<ThreadViewPost> 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const body = (await response.json()) as any;
 
-  if (!isThreadViewPost(body?.thread)) {
+  if (!AppBskyFeedDefs.isThreadViewPost(body?.thread)) {
     throw new Error('invalid post');
   }
 
   return body.thread;
 }
 
-export async function getProfile(actor: string): Promise<ProfileViewDetailed> {
+export async function getProfile(actor: string): Promise<AppBskyActorDefs.ProfileViewDetailed> {
   const url = `https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=${actor}`;
   const response = await fetch(url, {
     method: 'GET',
@@ -46,7 +45,7 @@ export async function getProfile(actor: string): Promise<ProfileViewDetailed> {
     throw new Error(`HTTP error! Status: ${response.status}`);
   }
 
-  const body = (await response.json()) as ProfileViewDetailed;
+  const body = (await response.json()) as AppBskyActorDefs.ProfileViewDetailed;
 
   return body;
 }

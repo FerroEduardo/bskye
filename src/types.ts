@@ -1,14 +1,12 @@
-import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
-import { type OutputSchema as Profile } from '@atproto/api/dist/client/types/app/bsky/actor/getProfile';
-import { type ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppBskyFeedDefs, AppBskyActorGetProfile, AppBskyActorDefs } from '@atproto/api';
 
 export interface Platform {
-  renderPost(host: string, userHandler: string, postId: string, postThread: ThreadViewPost): string;
-  renderProfile(host: string, profile: Profile): string;
+  renderPost(host: string, userHandler: string, postId: string, postThread: AppBskyFeedDefs.ThreadViewPost): string;
+  renderProfile(host: string, profile: AppBskyActorGetProfile.OutputSchema): string;
 }
 
 export interface BskyeVideo {
-  author: ProfileViewBasic;
+  author: AppBskyActorDefs.ProfileViewBasic;
   video: {
     url: string;
     mimeType: string | undefined;
@@ -22,7 +20,7 @@ export interface BskyeVideo {
 }
 
 export interface BskyeImage {
-  author: ProfileViewBasic;
+  author: AppBskyActorDefs.ProfileViewBasic;
   images: {
     url: string;
     mimeType: string | undefined;
@@ -36,7 +34,7 @@ export interface BskyeImage {
 }
 
 export interface BskyeGif {
-  author: ProfileViewBasic;
+  author: AppBskyActorDefs.ProfileViewBasic;
   url: string;
   mimeType: string | undefined;
   aspectRatio?: {
@@ -48,6 +46,6 @@ export interface BskyeGif {
 }
 
 export interface QuotedPost {
-  author: ProfileViewBasic;
+  author: AppBskyActorDefs.ProfileViewBasic;
   text: string;
 }

@@ -1,7 +1,7 @@
-import { type OutputSchema as Profile } from '@atproto/api/dist/client/types/app/bsky/actor/getProfile';
+import { AppBskyActorGetProfile } from '@atproto/api';
 import { escapeHtml, getUserDisplayString } from '../../util';
 
-function getMetaTags(host: string, profile: Profile): string[] {
+function getMetaTags(host: string, profile: AppBskyActorGetProfile.OutputSchema): string[] {
   const profileUrl = `https://bsky.app/profile/${profile.handle}/`;
   const description = profile.description ? escapeHtml(profile.description) : '';
   const title = escapeHtml(getUserDisplayString(profile.displayName, profile.handle));
@@ -31,7 +31,7 @@ function getMetaTags(host: string, profile: Profile): string[] {
   return metaTags;
 }
 
-export function render(host: string, profile: Profile) {
+export function render(host: string, profile: AppBskyActorGetProfile.OutputSchema) {
   const profileUrl = `https://bsky.app/profile/${profile.handle}/`;
 
   return `<!DOCTYPE html>
